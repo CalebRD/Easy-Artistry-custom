@@ -3,7 +3,7 @@
 # -----------------------------------------------
 import webbrowser
 from label import extract_tags, tags_to_prompt
-from image import generate_image
+from model_lab import generate_image
 
 def run_once():
     print("=== Enter a scene description (in Chinese or English) ===")
