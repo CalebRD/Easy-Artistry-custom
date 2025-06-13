@@ -1,5 +1,5 @@
 # -----------------------------------------------
-# model_lab.py  ——  统一格式 generate_image(prompt, n, size)
+# model_lab.py  ——  Unified format generate_image(prompt, n, size)
 # -----------------------------------------------
 import os, requests, json, re, webbrowser
 from dotenv import load_dotenv
@@ -9,11 +9,9 @@ def _get_key() -> str:
     load_dotenv()
     k = os.getenv("MODELSLAB_API_KEY")
     if not k:
-        raise RuntimeError("请在 .env 中设置 MODELSLAB_API_KEY")
+        raise RuntimeError("Please set MODELSLAB_API_KEY in .env")  
     return k
-
-
-# ───────────────── 统一接口 ─────────────────────
+    
 def generate_image(
     prompt: str,
     n: int = 1,
@@ -23,23 +21,23 @@ def generate_image(
     seed: int | None = None,
 ) -> list[str]:
     """
-    与 image.py 同签名：
-        prompt (str)       : 正向提示词
-        n (int)            : 生成张数，对应 Modelslab 的 samples
-        size (str)         : "宽x高"，例如 "768x1024"
-    可选 keyword:
-        negative_prompt (str) : 负面提示
-        seed (int|None)       : 随机种子（None = 随机）
-    返回：
-        list[str] : 可直接访问的图片 URL 列表
+        Same signature as image.py:
+        prompt (str)       : Positive prompt
+        n (int)            : Number of images to generate, corresponds to Modelslab's samples
+        size (str)         : "widthxheight", e.g., "768x1024"
+        Optional keyword:
+            negative_prompt (str) : Negative prompt
+            seed (int|None)       : Random seed (None = random)
+        Returns:
+            list[str] : List of image URLs that can be directly accessed
     """
-    # ---------- 解析 size ----------
+    # ----------  size ----------
     m = re.match(r"^\s*(\d+)[xX](\d+)\s*$", size)
     if not m:
-        raise ValueError('size 应写成 "宽x高"，例如 "768x768"')
+        raise ValueError('size should be written as "widthxheight", e.g., "768x768"')
     width, height = m.groups()
 
-    # ---------- 发送请求 ----------
+    # ---------- request ----------
     url = "https://modelslab.com/api/v6/realtime/text2img"
     payload = {
         "key": _get_key(),
@@ -56,7 +54,7 @@ def generate_image(
     }
     data = requests.post(url, json=payload, timeout=120).json()
 
-    # ---------- 结果处理 ----------
+    # ---------- result ----------
     if data.get("status") != "success":
         raise RuntimeError(f"Modelslab error: {json.dumps(data, ensure_ascii=False)}")
 
@@ -65,7 +63,7 @@ def generate_image(
     return clean_urls
 
 
-# ───────────────── 自测 ────────────────────────
+
 if __name__ == "__main__":
     demo_prompt = "(1girl:1.1), (solo), (masterpiece:1.2), (best quality:1.2), " \
                   "white hair, transparent vinyl jacket, crop top, denim shorts, " \
