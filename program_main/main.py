@@ -34,7 +34,6 @@ def back_end_main(user_input: str):
     if not user_input:
         print("⚠️  Input is empty, exiting.")
         return
-
     # ① Tag extraction
     tags = extract_tags(user_input)
     print("📝 GPT-4 Tags:", tags)
