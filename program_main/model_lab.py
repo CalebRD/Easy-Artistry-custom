@@ -32,7 +32,7 @@ def generate_image(
             list[str] : List of image URLs that can be directly accessed
     """
     # ----------  size ----------
-    m = re.match(r"^\s*(\d+)[xX](\d+)\s*$", size)
+    m = re.match(r"^\s*(\d+)[xX](\d+)\s*$", size) # Matches "widthxheight" format
     if not m:
         raise ValueError('size should be written as "widthxheight", e.g., "768x768"')
     width, height = m.groups()

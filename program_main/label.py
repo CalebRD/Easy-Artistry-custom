@@ -16,7 +16,7 @@ def _get_key():
 
 def extract_tags(user_input: str) -> dict:
     """
-    调 GPT-4.1，返回：
+    returns a dictionary with keys "main_body", "background", and "foreground",
     {
         "main_body": [...],
         "background": [...],

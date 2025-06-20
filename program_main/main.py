@@ -29,9 +29,9 @@ def run_once():
     webbrowser.open(urls[0])
     # -----------------------------------------------
 
-def back_end_main(user_input: str):
-    print("=== Enter a scene description (in Chinese or English) ===")
-
+def back_end_main(user_input: str = "null", size: str = "1024x1024",model: str = "stable-diffusion"):
+    print("=== Enter a scene description ===")
+    chat_response ='null'
     if not user_input:
         print("⚠️  Input is empty, exiting.")
         return
@@ -47,7 +47,7 @@ def back_end_main(user_input: str):
     urls = generate_image(prompt, n=1, size="1024x1024")
     print("✅ Image URL:", urls[0])
 
-    return urls[0]  # return the picture URL
+    return urls[0]  # return the picture URL and chat response
 
 if __name__ == "__main__":
     run_once()
