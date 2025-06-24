@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using EA_Utils;
 
 
 
@@ -37,17 +38,10 @@ namespace YourApp
                 {
                     currentPrompt = userMessage; // Update current prompt
                     // Add message to chat
-                    ChatPanel.Children.Add(new TextBlock
-                    {
-                        Text = "Current prompt changed to " + userMessage,
-                        Foreground = Brushes.White,
-                        Margin = new Thickness(0, 5, 0, 5),
-                        TextWrapping = TextWrapping.Wrap
-                    });
+                    EA_utils.DisplayChatMessage(ChatPanel, "Changing prompt to: " + userMessage, Brushes.White);
 
                     ChatInput.Clear();
 
-                    // TODO: Send to AI agent
                 }
 
                 e.Handled = true; // Prevent beep sound on Enter
@@ -59,47 +53,23 @@ namespace YourApp
             // TODO: Trigger image generation
             if (string.IsNullOrEmpty(currentPrompt))
             {
-                ChatPanel.Children.Add(new TextBlock
-                {
-                    Text = "Please Enter a Prompt First.",
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(0, 5, 0, 5),
-                    TextWrapping = TextWrapping.Wrap
-                });
+                EA_utils.DisplayChatMessage(ChatPanel, "Please enter a prompt first", Brushes.White); ;
             }
             else
             {
 
-                ChatPanel.Children.Add(new TextBlock
-                {
-                    Text = "Generating image for: " + currentPrompt,
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(0, 5, 0, 5),
-                    TextWrapping = TextWrapping.Wrap
-                });
+                EA_utils.DisplayChatMessage(ChatPanel, "Generating image for: " + currentPrompt, Brushes.White); ;
 
                 string imageUrl = GenerateImage(currentPrompt);
                 if (!string.IsNullOrEmpty(imageUrl))
                 {
                     // Display the generated image
                     GeneratedImage.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(imageUrl));
-                    ChatPanel.Children.Add(new TextBlock
-                    {
-                        Text = "Image generated successfully!",
-                        Foreground = Brushes.White,
-                        Margin = new Thickness(0, 5, 0, 5),
-                        TextWrapping = TextWrapping.Wrap
-                    });
+                    EA_utils.DisplayChatMessage(ChatPanel, "Image generated successfully!", Brushes.White);
                 }
                 else
                 {
-                    ChatPanel.Children.Add(new TextBlock
-                    {
-                        Text = "Failed to generate image.",
-                        Foreground = Brushes.Red,
-                        Margin = new Thickness(0, 5, 0, 5),
-                        TextWrapping = TextWrapping.Wrap
-                    });
+                    EA_utils.DisplayChatMessage(ChatPanel, "failed to generate image.", Brushes.White);
                 }
             }
         }
@@ -118,27 +88,11 @@ namespace YourApp
             string scriptPath = Path.Combine(baseDir, @"..\..\..\..\..\main.py");
             scriptPath = Path.GetFullPath(scriptPath); // Normalize the path
 
-            var psi = new ProcessStartInfo
-            {
-                FileName = "python", // Run Python
-                Arguments = $"\"main.py\" \"{userInput}\"",
-                RedirectStandardOutput = true, // Capture output (i.e., the image URL)
-                UseShellExecute = false, // Needed to redirect output
-                CreateNoWindow = true, // Hide the Python terminal window
-                WorkingDirectory = Path.GetDirectoryName(scriptPath) // Your Python file folder
-            };
 
-            using (var process = Process.Start(psi)) // Start the process
-            {
-                if (process == null)
-                {
-                    MessageBox.Show("Failed to start Python process.");
-                    return string.Empty;
-                }
-                string result = process.StandardOutput.ReadToEnd(); // Read printed URL
-                process.WaitForExit(); // Wait for Python to finish
-                return result.Trim(); // Clean up result
-            }
+            // Run the script
+            List<string> args = [userInput];
+            return EA_utils.RunPythonScript(scriptPath, args);
+            
         }
 
     }
