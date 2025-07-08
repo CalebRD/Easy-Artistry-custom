@@ -36,9 +36,9 @@ def stop_sd(proc: subprocess.Popen, port=7860):
         for c in p.info["connections"]:
             if c.laddr.port == port:
                 p.kill()
-
+ 
 # ==================== demo ====================
 if __name__ == "__main__":
     proc = start_sd(7860)
-    # ... do something with the SD WebUI ...
+    # do something with the SD WebUI 
     stop_sd(proc, 7860)
