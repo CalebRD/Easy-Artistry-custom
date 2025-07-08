@@ -31,7 +31,7 @@ def stop_sd(proc: subprocess.Popen, port=7860):
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
-    # 双保险
+    # double-check if any process is still using the port
     for p in psutil.process_iter(["pid", "connections"]):
         for c in p.info["connections"]:
             if c.laddr.port == port:
@@ -40,5 +40,5 @@ def stop_sd(proc: subprocess.Popen, port=7860):
 # ==================== demo ====================
 if __name__ == "__main__":
     proc = start_sd(7860)
-    # ... 调用模型或 REST ...
+    # ... do something with the SD WebUI ...
     stop_sd(proc, 7860)
