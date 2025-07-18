@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 """
-自动检测 GPU 并启动 Automatic1111 WebUI（带 --api）。
-- GPU 可用 ➜ xformers / half precision / 高速
-- GPU 不可用 ➜ CPU-only 模式 (--precision full --no-half --skip-torch-cuda-test)
+Automatically detect GPU and launch Automatic1111 WebUI (with --api).
 
-用法:
-    python serve_local_sd.py [--port 7860] [--model-path /your/model.safetensors]
+• GPU detected  → add --xformers + half precision for extra speed  
+• No GPU       → start in CPU‑only mode (--precision full --no‑half --skip‑torch‑cuda‑test)
+
+Usage:
+    python serve_local_sd.py [--port 7860] [--model-path /path/to/model.safetensors]
 """
+
 import argparse, shutil, subprocess, sys, os, pathlib, time
-import torch  
+import torch, requests
 
 ROOT = pathlib.Path(__file__).resolve().parent / "stable-diffusion-webui"
 
@@ -22,38 +24,37 @@ def main():
     args = ap.parse_args()
 
     if not ROOT.exists():
-        print("找不到 stable-diffusion-webui 目录，请先 git clone。")
+        print("Cannot find 'stable-diffusion-webui' directory; please git clone it first.")
         sys.exit(1)
 
     cmd = [sys.executable, "launch.py", "--api", "--listen", "--port", args.port]
 
     if detect_cuda():
-        print("✅ 检测到 GPU，可用 CUDA。以 xformers 半精度启动...")
+        print("✅ GPU detected (CUDA available). Launching with xformers + half precision …")
         cmd += ["--xformers", "--medvram"]
     else:
-        print("⚠️ 未检测到 GPU，将以 CPU only 模式启动（速度较慢）...")
+        print("⚠️ No GPU detected, running in CPU‑only mode (this will be slower) …")
         cmd += ["--precision", "full", "--no-half", "--skip-torch-cuda-test"]
 
-    # 附加模型路径
+    # add checkpoint path if provided
     if args.model_path:
         cmd += ["--ckpt", args.model_path]
 
-    # 启动
-    print("▶ 启动命令：", " ".join(cmd))
+    # start WebUI
+    print("▶ Launch command:", " ".join(cmd))
     subprocess.Popen(cmd, cwd=ROOT)
 
-    # 简单心跳检测
+    # simple heartbeat check
     host = f"http://127.0.0.1:{args.port}"
-    import requests, time
     for _ in range(30):
         try:
             requests.get(f"{host}/sdapi/v1/sd-models", timeout=3)
-            print(f"🚀 WebUI 已就绪 {host}")
+            print(f"🚀 WebUI is ready at {host}")
             break
-        except Exception:
+        except requests.exceptions.RequestException:
             time.sleep(2)
     else:
-        print("⏰ WebUI 启动超时，请检查日志窗口。")
+        print("⏰ WebUI startup timed out; please check the log window.")
 
 if __name__ == "__main__":
     main()

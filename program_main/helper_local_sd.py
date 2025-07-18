@@ -3,7 +3,7 @@ import subprocess, time, requests, psutil
 
 def start_sd(port=7860) -> subprocess.Popen:
     proc = subprocess.Popen(
-        ["python", "serve_local_sd.py", "--port", str(port)]
+        ["python", "program_main\serve_local_sd.py", "--port", str(port)]
     )
     _wait_ready(port)
     return proc
@@ -39,6 +39,15 @@ def stop_sd(proc: subprocess.Popen, port=7860):
  
 # ==================== demo ====================
 if __name__ == "__main__":
-    proc = start_sd(7860)
-    # do something with the SD WebUI 
-    stop_sd(proc, 7860)
+    proc = start_sd(7860)                      # launch WebUI
+    print("WebUI started, waiting for it to be ready,enter 'stop' to quit.")
+    try:
+        # simple interactive loop
+        while True:
+            cmd = input(">>> type 'stop' to quit: ").strip().lower()
+            if cmd in {"stop", "exit", "q"}:
+                break                          # leave the loop
+    except KeyboardInterrupt:                  # allow Ctrl‑C as well
+        pass
+    finally:
+        stop_sd(proc, 7860)                    # graceful shutdown
