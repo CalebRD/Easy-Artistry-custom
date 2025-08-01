@@ -1,19 +1,22 @@
 # -------------------------------------------------
-# local_sd.py — unified local Stable‑Diffusion caller
+# local_sd.py — unified local Stable-Diffusion caller
 # -------------------------------------------------
 """
 Features
 1. start_server()       start Automatic1111 WebUI (skips if already running)
-2. shutdown_server()    stop WebUI via REST / port‑kill
-3. generate_image()     call /sdapi/v1/txt2img
-   · signature matches image.py / model_lab.py so the front‑end can switch
-     between cloud and local with one flag.
+2. shutdown_server()    stop WebUI via REST / port-kill
+3. generate_image()     call /sdapi/v1/txt2img  (no longer changes model)
+
+Checkpoint selection is now handled **outside** this module via:
+    start_local_server(model_name)  or  switch_local_model(model_name)
+
+Default presets are tuned for SD-1.5 on CPU; SD-XL works but will be slower.
 """
 
-import os, re, subprocess, time, requests, psutil, shutil, sys
+import os, re, subprocess, time, requests, psutil, shutil, sys, webbrowser
 from pathlib import Path
 
-# adjust to your WebUI folder (same path as serve_local_sd.py)
+# ───────────── paths & server conf ──────────────
 ROOT = Path(__file__).resolve().parent / "stable-diffusion-webui"
 HOST = os.getenv("LOCAL_SD_HOST", "http://127.0.0.1:7860")
 PORT = int(HOST.split(":")[-1])
@@ -27,7 +30,7 @@ def _server_running() -> bool:
     except requests.exceptions.RequestException:
         return False
 
-_proc: subprocess.Popen | None = None      # global handle
+_proc: subprocess.Popen | None = None       # global handle
 
 def start_server(model_path: str | None = None):
     """Launch WebUI if not already running."""
@@ -58,34 +61,30 @@ def _wait_ready(timeout: int = 90):
     raise TimeoutError("WebUI failed to start within timeout")
 
 def _detect_cuda() -> bool:
-    """Simple check for NVIDIA GPU via nvidia‑smi."""
+    """Simple check for NVIDIA GPU via nvidia-smi."""
     return shutil.which("nvidia-smi") is not None
 
 # ---------- 2. txt2img --------------------------
-
 def generate_image(
     prompt: str,
     n: int = 1,
     size: str = "768x768",
     *,
     negative_prompt: str = "",
-    quality: str = "balanced",           # <── 新增：画质预设
-    steps: int | None = None,            # <── 允许手动覆盖（可选）
+    quality: str = "balanced",
+    steps: int | None = None,
     sampler_name: str | None = None,
     cfg_scale: float | None = None,
     seed: int | None = None,
-    model_name: str | None = None,       # <── 允许指定模型名称（可选）
 ) -> list[str]:
     """
-    Same signature idea as model_lab.generate_image but with extra quality preset.
-    Returns local PNG paths.
+    Generate images via local WebUI; returns list of local PNG paths.
+    Assumes the desired checkpoint has already been loaded by the caller.
     """
-    start_server()  # ensure server is running
-    if model_name:
-        _switch_model(model_name)    
+    start_server()                          # ensure server is running
     w, h = _parse_size(size)
 
-    # ---------- choose defaults by quality ----------
+    # ---------- presets ----------
     presets = {
         "fast": {
             "steps": 20,
@@ -94,22 +93,18 @@ def generate_image(
             "enable_hr": False,
         },
         "balanced": {
-            "steps": 28,
-            "sampler_name": "DPM++ 2M Karras",
+            "steps": 24,
+            "sampler_name": "DPM++ 2M",
             "cfg_scale": 7.0,
-            "enable_hr": True,
-            "hr_scale": 1.5,
-            "hr_second_pass_steps": 12,
-            "denoising_strength": 0.35,
-            "hr_upscaler": "R-ESRGAN 4x+",
+            "enable_hr": False,
         },
         "high": {
             "steps": 36,
             "sampler_name": "DPM++ SDE Karras",
             "cfg_scale": 7.5,
             "enable_hr": True,
-            "hr_scale": 2.0,
-            "hr_second_pass_steps": 16,
+            "hr_scale": 1.8,
+            "hr_second_pass_steps": 14,
             "denoising_strength": 0.4,
             "hr_upscaler": "R-ESRGAN 4x+",
         },
@@ -133,8 +128,6 @@ def generate_image(
         "seed": seed,
         "save_images": False,
     }
-
-    # Hires.fix
     if q.get("enable_hr"):
         payload.update({
             "enable_hr": True,
@@ -144,11 +137,19 @@ def generate_image(
             "hr_second_pass_steps": q["hr_second_pass_steps"],
         })
 
-    r = requests.post(f"{HOST}/sdapi/v1/txt2img", json=payload, timeout=600)
-    r.raise_for_status()
-    images_b64: list[str] = r.json()["images"]
-    return _save_images(images_b64)
+    # ---- request with 404 retry ----
+    for _ in range(5):
+        r = requests.post(f"{HOST}/sdapi/v1/txt2img", json=payload, timeout=600)
+        if r.status_code == 404:            # API not ready yet
+            time.sleep(1)
+            continue
+        r.raise_for_status()
+        images_b64 = r.json()["images"]
+        return _save_images(images_b64)
 
+    raise RuntimeError("txt2img API unavailable after retries")
+
+# ---------- helpers -----------------------------
 def _parse_size(sz: str) -> tuple[int, int]:
     m = re.match(r"\s*(\d+)[xX](\d+)\s*$", sz)
     if not m:
@@ -180,20 +181,16 @@ def shutdown_server():
         for c in p.info["connections"]:
             if c.laddr and c.laddr.port == PORT:
                 p.kill()
-# ---------- helper: hot‑swap checkpoint ----------
+
+# ---------- helper: hot-swap checkpoint ----------
 def _switch_model(model_name: str, timeout: int = 90):
-    """
-    Ask WebUI to load another checkpoint via /sdapi/v1/options.
-    Will poll /sdapi/v1/progress until loading finishes or timeout.
-    """
-    # 1) tell WebUI to switch
+    """Internal helper to change checkpoint (used by backend_main)."""
     requests.post(f"{HOST}/sdapi/v1/options",
                   json={"sd_model_checkpoint": model_name},
                   timeout=10)
-    # 2) wait until the model is really loaded
     for _ in range(timeout):
         p = requests.get(f"{HOST}/sdapi/v1/progress?skip_current_image=true", timeout=10).json()
-        if not p.get("state", {}).get("job_count", 0):         # no pending jobs → done
+        if not p.get("state", {}).get("job_count", 0):
             return
         time.sleep(1)
     raise TimeoutError(f"Loading model '{model_name}' timed out")
@@ -201,6 +198,12 @@ def _switch_model(model_name: str, timeout: int = 90):
 # -------------------------------------------------
 if __name__ == "__main__":
     demo = "(masterpiece), pink hair girl in flower meadow, anime style"
-    imgs = generate_image(demo, n=1, size="512x768",
-                          negative_prompt="lowres, blurry")
-    print("Saved:", imgs[0])
+    imgs = generate_image(
+        demo, n=1, size="512x768", negative_prompt="lowres, blurry")
+    if imgs:
+        path = imgs[0]
+        print("Saved:", path)
+        if sys.platform.startswith("win"):
+            os.startfile(path)               # type: ignore[attr-defined]
+        else:
+            webbrowser.open(f"file://{path}")
