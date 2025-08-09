@@ -20,6 +20,7 @@ from local_sd import _switch_model                            # checkpoint hot-s
 # ======================================================================
 # 1) chat → prompt
 # ======================================================================
+#DELL3 api DO NOT NEED TO CALL THIS FUNCTION,just call generate_image_from_prompt
 def chat_generate_prompt(user_input: str) -> Dict[str, Any]:
     user_input = user_input.strip()
     if not user_input:
