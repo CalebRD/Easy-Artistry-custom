@@ -157,5 +157,64 @@ def extract_tags(user_input: str) -> dict:
 
 
 def tags_to_prompt(tags: dict) -> str:
-    parts = tags.get("main_body", []) + tags.get("background", []) + tags.get("foreground", [])
-    return ", ".join([p.strip() for p in parts if p.strip()])
+    """
+    Merge Stable Diffusion style prompt.
+    
+    Expected input format:
+    {
+      "sd_prompt": "(masterpiece:1.3), (best quality:1.2), Hitori Gotoh from Bocchi the Rock, playing piano, wearing white sailor uniform, on stage, (bright smile), background of red curtain, anime illustration",
+      "keywords": {
+        "main_body": ["Hitori Gotoh", "playing piano", "white sailor uniform", "bright smile"],
+        "background": ["stage", "red curtain"],
+        "foreground": []
+      }
+    }
+    
+    Output: combined SD-style prompt string.
+    """
+    # 原始 sd_prompt（可能含有权重和修饰符）
+    sd_prompt = tags.get("sd_prompt", "").strip()
+
+    # keywords 内的部分
+    keywords = []
+    for key in ["main_body", "background", "foreground"]:
+        keywords.extend(tags.get("keywords", {}).get(key, []))
+
+    # 清理空白并去重（但保留顺序）
+    keywords_cleaned = []
+    seen = set()
+    for kw in keywords:
+        kw_stripped = kw.strip()
+        if kw_stripped and kw_stripped not in seen:
+            keywords_cleaned.append(kw_stripped)
+            seen.add(kw_stripped)
+
+    # 合并：先保留 sd_prompt，然后追加 keywords（避免重复）
+    if sd_prompt:
+        prompt_parts = [sd_prompt] + keywords_cleaned
+    else:
+        prompt_parts = keywords_cleaned
+
+    return ", ".join(prompt_parts)
+
+
+if __name__ == "__main__":
+    print("请输入对图片的描述（或exit退出）：")
+    while True:
+        text = input("> ").strip()
+        if text.lower() in ("exit", "quit"):
+            break
+        try:
+            data = extract_tags(text)
+            if not data:
+                print("无法识别为图片描述，请重新输入。\n")
+                continue
+            print("\n提取的关键词：")
+            print(json.dumps(data, ensure_ascii=False, indent=2))
+            prompt = tags_to_prompt(data)
+            print("\n生成的Prompt：")
+            print(prompt)
+            print("\n---\n请输入对图片的描述（或exit退出）：")
+        except Exception as e:
+            print("错误：", e)
+            print("\n---\n请输入对图片的描述（或exit退出）：")
