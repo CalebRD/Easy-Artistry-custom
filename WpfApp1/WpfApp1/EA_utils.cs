@@ -36,6 +36,7 @@ namespace EA_Utils
                 FileName = "python", // Run Python
                 Arguments = tempArgs,
                 RedirectStandardOutput = true, // Capture output (i.e., the image URL)
+                RedirectStandardError = true, //get errors as well
                 UseShellExecute = false, // Needed to redirect output
                 CreateNoWindow = true, // Hide the Python terminal window
                 WorkingDirectory = Path.GetDirectoryName(path) // Your Python file folder
@@ -49,6 +50,12 @@ namespace EA_Utils
                     return string.Empty;
                 }
                 string result = process.StandardOutput.ReadToEnd(); // Read printed URL
+                string error = process.StandardError.ReadToEnd(); // Read any errors
+                if (error.Length > 0)
+                {
+                    MessageBox.Show($"Python error: {error}");
+                    return string.Empty;
+                }
                 process.WaitForExit(); // Wait for Python to finish
                 return result.Trim(); // Clean up result
             }
