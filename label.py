@@ -81,6 +81,11 @@ def extract_tags(user_input: str) -> dict:
         temperature=0.2,
         max_tokens=512
     )
+    if not resp:
+        raise Exception("No GPT-4.1 response")
+        # print("ERROR: NO GPT-4.1 RESPONSE")
+    # else:
+        # print("GPT 4.1 Sucess")
 
     raw = resp.choices[0].message.content.strip()
     match = re.search(r"\{.*\}", raw, re.S)
