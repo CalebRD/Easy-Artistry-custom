@@ -11,6 +11,7 @@ WpfApp1/.vs/
 
 
 
+
 ## Ignore user-specific files
 *.user
 *.suo
@@ -52,3 +53,6 @@ artifacts/
 ## Mac & Windows trash
 .DS_Store
 Thumbs.db
+
+## MISC.
+__pycache__\label.cpython-310.pyc
