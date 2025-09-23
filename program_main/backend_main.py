@@ -162,30 +162,85 @@ def generate_image_from_prompt(
 # ======================================================================
 if __name__ == "__main__":
     try:
+        # Get user description and convert into SD-style prompt
         print("description:")
         user_text = input("> ").strip()
         data = chat_generate_prompt(user_text)
         print("\nPrompt:", data["prompt"])
 
-        start_local_server("toonyou_beta6XL.safetensors")  # demo: anime XL
+        # Launch local WebUI with a given checkpoint (example: anime XL)
+        start_local_server("sd_xl_base_1.0.safetensors")
+        #start_local_server("v1-5-pruned.safetensors")
+        
+        # Choose preset: fast / balanced / high
+        chosen_preset = "high"
+
+        # Optional per-call overrides (sd_overrides)
+        # These keys can override preset values for this single call.
+        # If a key is not provided, the value from the chosen preset is used.
+
+        
+        sd_overrides = {
+            # ----- Core generation parameters -----
+            # "steps": 28,                # Number of denoising steps.
+                                        # Higher → more detail, slower. Typical 18–40.
+            # "sampler_name": "Euler a",  # Sampler algorithm.
+                                        # Examples: "Euler a", "DPM++ 2M", "DPM++ SDE Karras".
+            # "cfg_scale": 7.5,           # Classifier-Free Guidance scale.
+                                        # Higher → stronger prompt adherence, but risk of oversaturation.
+                                        # Common range: 6.5–8.
+            # "seed": 123456,             # Random seed. Fix for reproducibility.
+                                        # Use None or -1 for random.
+
+            # ----- High-resolution (second-pass) options -----
+            # "enable_hr": True,          # Enable high-res fix (runs a second pass).
+                                        # Improves detail, increases runtime.
+            # "hr_scale": 1.6,            # Upscaling factor for the second pass (1.3–2.0 typical).
+            # "hr_upscaler": "R-ESRGAN 4x+",  # Upscaler algorithm used in second pass.
+            # "denoising_strength": 0.35, # Strength of re-denoising in the second pass (0–1).
+                                        # Lower preserves more original structure, higher redraws more.
+            # "hr_second_pass_steps": 12  # Number of steps used in the second pass.
+        }
+        
+        sd_overrides = {
+            "steps": 40,                 # ↑ More sampling steps for SDXL, improves detail
+            "sampler_name": "DPM++ SDE Karras",  # A good high-quality sampler for SDXL
+            "cfg_scale": 7.0,            # Prompt adherence; 7 is balanced for SDXL
+            "seed": 123456,              # Fixed seed for reproducibility
+
+            # High-resolution second pass
+            "enable_hr": True,           # Ensure HR fix is enabled
+            "hr_scale": 1.8,             # Upscale factor (good balance between detail and speed)
+            "hr_upscaler": "R-ESRGAN 4x+",  # Common high-quality upscaler
+            "denoising_strength": 0.35,  # Controls how much the 2nd pass redraws (0.3–0.4 is good)
+            "hr_second_pass_steps": 20   # Extra steps in the 2nd pass for more refinement
+            }
+
+
+        # Generate image
         urls = generate_image_from_prompt(
             data["prompt"],
-            size="768x768",
+            size="1024x1024",
             model="local",
             n=1,
-            preset="fast",                     # choose preset
-            sd_params={"steps": 18}            # override example
+            preset=chosen_preset,
+            sd_params=sd_overrides,
+            negative_prompt="lowres, blurry, bad anatomy, bad hands, extra fingers, extra limbs, "
+                    "cropped, text, watermark, logo, worst quality, jpeg artifacts"
         )
+
         img = urls[0]
         print("Saved:", img)
 
-        # open
+        # Open result
         if img.startswith("http"):
             webbrowser.open(img)
         elif sys.platform.startswith("win"):
-            os.startfile(img)                 # type: ignore[attr-defined]
+            os.startfile(img)  # type: ignore[attr-defined]
         else:
             webbrowser.open(f"file://{img}")
 
     finally:
+        # Graceful shutdown
         stop_local_server()
+

@@ -15,7 +15,30 @@ Default presets are tuned for SD-1.5 on CPU; SD-XL works but will be slower.
 
 import os, re, subprocess, time, requests, psutil, shutil, sys, webbrowser
 from pathlib import Path
-
+_PRESETS: dict[str, dict] = {
+    "fast": {
+        "steps": 20,
+        "sampler_name": "Euler a",
+        "cfg_scale": 6.5,
+        "enable_hr": False,
+    },
+    "balanced": {
+        "steps": 24,
+        "sampler_name": "DPM++ 2M",
+        "cfg_scale": 7.0,
+        "enable_hr": False,
+    },
+    "high": {
+        "steps": 36,
+        "sampler_name": "DPM++ SDE Karras",
+        "cfg_scale": 7.5,
+        "enable_hr": True,
+        "hr_scale": 1.8,
+        "hr_second_pass_steps": 14,
+        "denoising_strength": 0.4,
+        "hr_upscaler": "R-ESRGAN 4x+",
+    },
+}
 # ───────────── paths & server conf ──────────────
 ROOT = Path(__file__).resolve().parent / "stable-diffusion-webui"
 HOST = os.getenv("LOCAL_SD_HOST", "http://127.0.0.1:7860")
@@ -64,80 +87,79 @@ def _detect_cuda() -> bool:
     """Simple check for NVIDIA GPU via nvidia-smi."""
     return shutil.which("nvidia-smi") is not None
 
-# ---------- 2. txt2img --------------------------
+# ---------- 2. txt2img -------------------------- 
 def generate_image(
     prompt: str,
     n: int = 1,
     size: str = "768x768",
     *,
     negative_prompt: str = "",
-    quality: str = "balanced",
-    steps: int | None = None,
-    sampler_name: str | None = None,
-    cfg_scale: float | None = None,
-    seed: int | None = None,
+    quality: str = "balanced",                 # preset key: fast / balanced / high
+    steps: int | None = None,                  # override: sampling steps
+    sampler_name: str | None = None,           # override: sampler
+    cfg_scale: float | None = None,            # override: CFG scale
+    seed: int | None = None,                   # override: random seed
+    # —— fine-tuning options (per-call overrides, do NOT change presets) ——
+    enable_hr: bool | None = None,
+    hr_scale: float | None = None,
+    hr_upscaler: str | None = None,
+    denoising_strength: float | None = None,
+    hr_second_pass_steps: int | None = None,
 ) -> list[str]:
     """
-    Generate images via local WebUI; returns list of local PNG paths.
-    Assumes the desired checkpoint has already been loaded by the caller.
+    Generate images via local Stable Diffusion WebUI API.
+
+    Behavior:
+    - Selects a baseline configuration from one of the fixed presets
+      ("fast", "balanced", "high").
+    - Call-time arguments (steps, sampler_name, cfg_scale, seed, etc.)
+      can override preset values, but do not modify the presets themselves.
+    - High-resolution options (enable_hr, hr_scale, etc.) follow the same rule:
+      per-call overrides > preset values > default values.
+    - Returns a list of file paths pointing to locally saved PNG images.
     """
-    start_server()                          # ensure server is running
+    start_server()                          # ensure the WebUI server is running
     w, h = _parse_size(size)
 
-    # ---------- presets ----------
-    presets = {
-        "fast": {
-            "steps": 20,
-            "sampler_name": "Euler a",
-            "cfg_scale": 6.5,
-            "enable_hr": False,
-        },
-        "balanced": {
-            "steps": 24,
-            "sampler_name": "DPM++ 2M",
-            "cfg_scale": 7.0,
-            "enable_hr": False,
-        },
-        "high": {
-            "steps": 36,
-            "sampler_name": "DPM++ SDE Karras",
-            "cfg_scale": 7.5,
-            "enable_hr": True,
-            "hr_scale": 1.8,
-            "hr_second_pass_steps": 14,
-            "denoising_strength": 0.4,
-            "hr_upscaler": "R-ESRGAN 4x+",
-        },
-    }
-    q = presets.get(quality.lower(), presets["balanced"])
+    # ---------- get baseline from immutable presets ----------
+    base = _PRESETS.get(quality.lower(), _PRESETS["balanced"])
 
-    steps = steps or q["steps"]
-    sampler_name = sampler_name or q["sampler_name"]
-    cfg_scale = cfg_scale or q["cfg_scale"]
+    # basic parameters: caller overrides > preset
+    eff_steps = steps if steps is not None else base.get("steps")
+    eff_sampler = sampler_name if sampler_name is not None else base.get("sampler_name")
+    eff_cfg = cfg_scale if cfg_scale is not None else base.get("cfg_scale")
+
+    # high-resolution parameters: caller overrides > preset > defaults
+    eff_enable_hr = enable_hr if enable_hr is not None else base.get("enable_hr", False)
+    eff_hr_scale = hr_scale if hr_scale is not None else base.get("hr_scale", 1.5)
+    eff_hr_upscaler = hr_upscaler if hr_upscaler is not None else base.get("hr_upscaler", "R-ESRGAN 4x+")
+    eff_denoise = denoising_strength if denoising_strength is not None else base.get("denoising_strength", 0.4)
+    eff_hr_steps = hr_second_pass_steps if hr_second_pass_steps is not None else base.get("hr_second_pass_steps", 12)
 
     payload = {
         "prompt": prompt,
         "negative_prompt": negative_prompt,
         "width": w,
         "height": h,
-        "steps": steps,
-        "sampler_name": sampler_name,
-        "cfg_scale": cfg_scale,
+        "steps": eff_steps,
+        "sampler_name": eff_sampler,
+        "cfg_scale": eff_cfg,
         "batch_size": n,
         "n_iter": 1,
         "seed": seed,
         "save_images": False,
     }
-    if q.get("enable_hr"):
+
+    if eff_enable_hr:
         payload.update({
             "enable_hr": True,
-            "hr_scale": q["hr_scale"],
-            "hr_upscaler": q["hr_upscaler"],
-            "denoising_strength": q["denoising_strength"],
-            "hr_second_pass_steps": q["hr_second_pass_steps"],
+            "hr_scale": eff_hr_scale,
+            "hr_upscaler": eff_hr_upscaler,
+            "denoising_strength": eff_denoise,
+            "hr_second_pass_steps": eff_hr_steps,
         })
 
-    # ---- request with 404 retry ----
+    # ---- retry loop: handle 404 if API not yet ready ----
     for _ in range(5):
         r = requests.post(f"{HOST}/sdapi/v1/txt2img", json=payload, timeout=600)
         if r.status_code == 404:            # API not ready yet
@@ -148,6 +170,7 @@ def generate_image(
         return _save_images(images_b64)
 
     raise RuntimeError("txt2img API unavailable after retries")
+
 
 # ---------- helpers -----------------------------
 def _parse_size(sz: str) -> tuple[int, int]:

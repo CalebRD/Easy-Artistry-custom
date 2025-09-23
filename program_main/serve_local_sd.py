@@ -3,7 +3,7 @@
 Automatically detect GPU and launch Automatic1111 WebUI (with --api).
 
 • GPU detected  → add --xformers + half precision for extra speed  
-• No GPU       → start in CPU‑only mode (--precision full --no‑half --skip‑torch‑cuda‑test)
+• No GPU       → start in CPU-only mode (--precision full --no-half --skip-torch-cuda-test)
 
 Usage:
     python serve_local_sd.py [--port 7860] [--model-path /path/to/model.safetensors]
