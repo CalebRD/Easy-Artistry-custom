@@ -33,9 +33,15 @@ _PRESETS: dict[str, dict] = {
         "sampler_name": "DPM++ SDE Karras",
         "cfg_scale": 7.5,
         "enable_hr": True,
+<<<<<<< HEAD
         "hr_scale": 1.6,
         "hr_second_pass_steps": 14,
         "denoising_strength": 0.35,
+=======
+        "hr_scale": 1.8,
+        "hr_second_pass_steps": 14,
+        "denoising_strength": 0.4,
+>>>>>>> origin/ai
         "hr_upscaler": "R-ESRGAN 4x+",
     },
 }
@@ -55,16 +61,23 @@ def _server_running() -> bool:
 
 _proc: subprocess.Popen | None = None       # global handle
 
+<<<<<<< HEAD
 def start_server(model_path: str | None = None, *, no_half_vae: bool = True):
     """Launch WebUI aiming for max GPU utilization on 10GB+ cards (e.g., RTX 4070 12GB)."""
     import torch
     global _proc
 
+=======
+def start_server(model_path: str | None = None):
+    """Launch WebUI if not already running."""
+    global _proc
+>>>>>>> origin/ai
     if _server_running():
         return
     if not ROOT.exists():
         raise RuntimeError(f"WebUI dir not found: {ROOT}")
 
+<<<<<<< HEAD
     cmd = [sys.executable, "launch.py", "--api", "--listen", "--port", str(PORT)]
     if model_path:
         cmd += ["--ckpt", model_path]
@@ -103,6 +116,20 @@ def start_server(model_path: str | None = None, *, no_half_vae: bool = True):
 
 
 def _wait_ready(timeout: int = 120):
+=======
+    cmd = [sys.executable, "launch.py",
+           "--api", "--listen", "--port", str(PORT),
+           "--precision", "full", "--no-half", "--skip-torch-cuda-test"]
+    if model_path:
+        cmd += ["--ckpt", model_path]
+    if _detect_cuda():
+        cmd += ["--xformers", "--medvram"]
+
+    _proc = subprocess.Popen(cmd, cwd=ROOT)
+    _wait_ready()
+
+def _wait_ready(timeout: int = 90):
+>>>>>>> origin/ai
     """Block until WebUI is responsive or timeout."""
     for _ in range(timeout):
         if _server_running():
@@ -112,6 +139,7 @@ def _wait_ready(timeout: int = 120):
     raise TimeoutError("WebUI failed to start within timeout")
 
 def _detect_cuda() -> bool:
+<<<<<<< HEAD
     try:
         import torch
         return torch.cuda.is_available()
@@ -119,12 +147,20 @@ def _detect_cuda() -> bool:
         import shutil
         return shutil.which("nvidia-smi") is not None
 
+=======
+    """Simple check for NVIDIA GPU via nvidia-smi."""
+    return shutil.which("nvidia-smi") is not None
+>>>>>>> origin/ai
 
 # ---------- 2. txt2img -------------------------- 
 def generate_image(
     prompt: str,
     n: int = 1,
+<<<<<<< HEAD
     size: str = "512x512",
+=======
+    size: str = "768x768",
+>>>>>>> origin/ai
     *,
     negative_prompt: str = "",
     quality: str = "balanced",                 # preset key: fast / balanced / high

@@ -1,7 +1,11 @@
 # -----------------------------------------------
 # label.py   ——   GPT-4.1  + prompt 
 # -----------------------------------------------
+<<<<<<< HEAD
 from openai import OpenAI 
+=======
+from openai import OpenAI
+>>>>>>> origin/ai
 from dotenv import load_dotenv
 import os, json, re
 
@@ -27,7 +31,11 @@ def extract_tags(user_input: str) -> dict:
     '''
     system_prompt = ("""**Role Description**  
                 You are a professional keyword-extraction specialist. 
+<<<<<<< HEAD
                 Your task is to pull out image-generation keywords from the user's input. 
+=======
+                Your task is to pull out image-generation keywords from the user’s input. 
+>>>>>>> origin/ai
                 The output **must** follow the JSON schema exactly.
 
                 ---
@@ -75,7 +83,11 @@ def extract_tags(user_input: str) -> dict:
     system_prompt = (
     """**Role Description**
     You are a professional prompt-engineering assistant for *Stable Diffusion*.
+<<<<<<< HEAD
     Your job is to convert the user's natural-language description into an
+=======
+    Your job is to convert the user’s natural-language description into an
+>>>>>>> origin/ai
     authoritative Stable-Diffusion prompt that follows best community practices
     (keywords, style modifiers, weighting syntax, etc.).
 
