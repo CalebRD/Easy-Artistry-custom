@@ -33,15 +33,9 @@ _PRESETS: dict[str, dict] = {
         "sampler_name": "DPM++ SDE Karras",
         "cfg_scale": 7.5,
         "enable_hr": True,
-<<<<<<< HEAD
-        "hr_scale": 1.6,
-        "hr_second_pass_steps": 14,
-        "denoising_strength": 0.35,
-=======
         "hr_scale": 1.8,
         "hr_second_pass_steps": 14,
         "denoising_strength": 0.4,
->>>>>>> origin/ai
         "hr_upscaler": "R-ESRGAN 4x+",
     },
 }
@@ -61,62 +55,14 @@ def _server_running() -> bool:
 
 _proc: subprocess.Popen | None = None       # global handle
 
-<<<<<<< HEAD
-def start_server(model_path: str | None = None, *, no_half_vae: bool = True):
-    """Launch WebUI aiming for max GPU utilization on 10GB+ cards (e.g., RTX 4070 12GB)."""
-    import torch
-    global _proc
-
-=======
 def start_server(model_path: str | None = None):
     """Launch WebUI if not already running."""
     global _proc
->>>>>>> origin/ai
     if _server_running():
         return
     if not ROOT.exists():
         raise RuntimeError(f"WebUI dir not found: {ROOT}")
 
-<<<<<<< HEAD
-    cmd = [sys.executable, "launch.py", "--api", "--listen", "--port", str(PORT)]
-    if model_path:
-        cmd += ["--ckpt", model_path]
-
-    # Detect CUDA & VRAM
-    use_cuda, vram_bytes, device_name = False, 0, "CPU"
-    try:
-        if torch.cuda.is_available():
-            use_cuda = True
-            props = torch.cuda.get_device_properties(0)
-            vram_bytes = int(getattr(props, "total_memory", 0))
-            device_name = props.name
-    except Exception:
-        use_cuda = False
-
-    gb = vram_bytes / (1024 ** 3) if vram_bytes else 0
-    print(f"[WebUI] Detected device: {device_name} | VRAM: {gb:.2f} GB | CUDA: {use_cuda}")
-
-    if use_cuda:
-        # 激进：吃满 12GB，不用 medvram；开 xformers+SDP；channels_last 提升带宽利用率
-        cmd += ["--xformers", "--opt-sdp-attention", "--opt-channelslast"]
-        if no_half_vae:
-            cmd += ["--no-half-vae"]   # 画质更稳（VAE 用 fp32），显存+~1GB。若OOM可关掉
-        # （不加 --precision full/--no-half，让主干网络跑 fp16，更快更省显存）
-        if vram_bytes < 10 * 1024**3:
-            # 小显卡兜底
-            cmd += ["--medvram"]
-    else:
-        # CPU 路线：维持你原本的安全参数
-        cmd += ["--precision", "full", "--no-half", "--skip-torch-cuda-test"]
-
-    _proc = subprocess.Popen(cmd, cwd=ROOT)
-    print("Launching WebUI with:", " ".join(cmd))
-    _wait_ready()
-
-
-
-def _wait_ready(timeout: int = 120):
-=======
     cmd = [sys.executable, "launch.py",
            "--api", "--listen", "--port", str(PORT),
            "--precision", "full", "--no-half", "--skip-torch-cuda-test"]
@@ -129,7 +75,6 @@ def _wait_ready(timeout: int = 120):
     _wait_ready()
 
 def _wait_ready(timeout: int = 90):
->>>>>>> origin/ai
     """Block until WebUI is responsive or timeout."""
     for _ in range(timeout):
         if _server_running():
@@ -139,28 +84,14 @@ def _wait_ready(timeout: int = 90):
     raise TimeoutError("WebUI failed to start within timeout")
 
 def _detect_cuda() -> bool:
-<<<<<<< HEAD
-    try:
-        import torch
-        return torch.cuda.is_available()
-    except Exception:
-        import shutil
-        return shutil.which("nvidia-smi") is not None
-
-=======
     """Simple check for NVIDIA GPU via nvidia-smi."""
     return shutil.which("nvidia-smi") is not None
->>>>>>> origin/ai
 
 # ---------- 2. txt2img -------------------------- 
 def generate_image(
     prompt: str,
     n: int = 1,
-<<<<<<< HEAD
-    size: str = "512x512",
-=======
     size: str = "768x768",
->>>>>>> origin/ai
     *,
     negative_prompt: str = "",
     quality: str = "balanced",                 # preset key: fast / balanced / high
