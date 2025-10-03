@@ -30,13 +30,23 @@ _PRESETS: dict[str, dict] = {
     },
     "high": {
         "steps": 36,
-        "sampler_name": "DPM++ SDE Karras",
+        "sampler_name": "DPM++ 3M SDE",
         "cfg_scale": 7.5,
         "enable_hr": True,
         "hr_scale": 1.8,
         "hr_second_pass_steps": 14,
         "denoising_strength": 0.4,
         "hr_upscaler": "R-ESRGAN 4x+",
+    },
+     "ultra": {
+        "steps": 48,                       
+        "sampler_name": "DPM++ 3M SDE",    
+        "cfg_scale": 7.0,                  
+        "enable_hr": True,                 
+        "hr_scale": 2.0,                   
+        "hr_second_pass_steps": 20,        
+        "denoising_strength": 0.33,        
+        "hr_upscaler": "Latent (nearest-exact)"  
     },
 }
 # ───────────── paths & server conf ──────────────

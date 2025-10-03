@@ -32,7 +32,7 @@ def chat_generate_prompt(user_input: str) -> Dict[str, Any]:
 # 2) local server lifecycle
 # ======================================================================
 _local_up = False
-_default_checkpoint = "v1-5-pruned.safetensors"
+_default_checkpoint = "sd_xl_base_1.0.safetensors"
 
 def start_local_server(model_name: Optional[str] = None):
     global _local_up
@@ -171,7 +171,7 @@ if __name__ == "__main__":
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
         #start_local_server("sd_xl_base_1.0.safetensors")
-        start_local_server("v1-5-pruned.safetensors")
+        start_local_server("sd_xl_base_1.0.safetensors")
         
         # Choose preset: fast / balanced / high
         chosen_preset = "high"
@@ -213,7 +213,7 @@ if __name__ == "__main__":
             preset=chosen_preset,
             sd_params=sd_overrides,
             negative_prompt="""low quality, worst quality, blurry, text, error, cropped,
-                                jpeg artifacts, signature, watermark, username
+                                jpeg artifacts, signature, watermark, username, duplicate, multiple subjects
                                 """
         )
 
