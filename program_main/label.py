@@ -2,6 +2,7 @@
 # label.py   ——   GPT-4.1  + prompt 
 # -----------------------------------------------
 from openai import OpenAI 
+import requests
 from dotenv import load_dotenv
 import os, json, re
 
@@ -13,8 +14,116 @@ def _get_key():
         raise RuntimeError("请在 .env 中设置 OPENAI_API_KEY")
     return k
 
+def _get_cloudflare_config():
+    load_dotenv()
+    account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+    api_token = os.getenv("CLOUDFLARE_API_TOKEN")
+    if not account_id or not api_token:
+        raise RuntimeError("请在 .env 中设置 CLOUDFLARE_ACCOUNT_ID 和 CLOUDFLARE_API_TOKEN")
+    return account_id, api_token
 
-def extract_tags(user_input: str) -> dict:
+def extract_tags_cloudflare(user_input: str) -> dict:
+    """
+    returns a dictionary with keys "main_body", "background", and "foreground"
+    """
+    account_id, api_token = _get_cloudflare_config()
+    
+    system_prompt = (
+    """**Role Description**
+    You are a professional prompt-engineering assistant for *Stable Diffusion*.
+    Your job is to convert the user's natural-language description into an
+    authoritative Stable-Diffusion prompt that follows best community practices
+    (keywords, style modifiers, weighting syntax, etc.).
+
+    ---
+
+    ### Step-by-Step Workflow
+
+    1. **Input Check**
+    - If the user is describing an image (scene, character, object, etc.),
+        proceed to the next steps.
+    - Otherwise, output `null`.
+
+    2. **Main Subject Analysis**
+    - Decide whether the subject is a *person*, *creature*, or *object*.
+    - Extract subject attributes (hair color, clothing, material, pose…).
+
+    3. **Background Analysis**
+    - Determine the environment (forest, city skyline, spaceship interior…).
+    - Note time-of-day, lighting mood, weather, atmosphere.
+
+    4. **Foreground / Effects Analysis**
+    - Capture effects in front of or around the subject
+        (rain streaks, glowing particles, magic glyphs…).
+
+    5. **Style & Quality Modifiers**
+    - Add common SD quality tags: `(masterpiece:1.3)`, `(best quality:1.2)`.
+    - Choose one coherent art style (e.g. *anime illustration*, *cinematic photo*,
+        *digital oil painting*); avoid mixing conflicting styles.
+
+    6. **Prompt Assembly**
+    - Concatenate elements in this order **[quality] + [subject] + [details] +
+        [background] + [effects] + [style]**.
+    - Separate phrases with commas; put *key* phrases in parentheses to boost
+        weight; keep the whole line under 300 characters when possible.
+
+    ---
+
+    ### Output Format (strictly enforced)
+
+    ```json
+    {
+    "sd_prompt": "Stable-Diffusion ready prompt, comma-separated, with weighting tags",
+    "keywords": {
+        "main_body": ["keyword1", "keyword2"],
+        "background": ["keywordA", "keywordB"],
+        "foreground": ["keywordX", "keywordY"]
+    }
+    }
+    ```
+
+    Notes
+    Focus solely on building a single, coherent Stable-Diffusion prompt.
+    Do NOT include LoRA syntax, negative prompt, or camera settings unless explicitly provided.
+    For any unrelated user query, reply with null.
+    """)
+    
+    api_base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/"
+    headers = {"Authorization": f"Bearer {api_token}"}
+    
+    inputs = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_input}
+    ]
+    
+    def run(model, inputs):
+        input_data = { "messages": inputs }
+        response = requests.post(f"{api_base_url}{model}", headers=headers, json=input_data)
+        return response.json()
+    
+    try:
+        output = run("@cf/meta/llama-3-8b-instruct", inputs)
+        if "result" in output and "response" in output["result"]:
+            raw = output["result"]["response"].strip()
+            
+            match = re.search(r"\{.*\}", raw, re.S)
+            if not match:
+                raise ValueError("Cloudflare invalid JSON:\n" + raw)
+                
+            return json.loads(match.group())
+        else:
+            raise RuntimeError(f"Cloudflare响应格式异常: {output}")
+            
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Cloudflare API请求失败: {e}")
+    except KeyError as e:
+        raise RuntimeError(f"Cloudflare响应解析失败: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Cloudflare处理失败: {e}")
+
+
+
+def extract_tags_openai(user_input: str) -> dict:
     """
     returns a dictionary with keys "main_body", "background", and "foreground",
     {
@@ -197,6 +306,24 @@ def tags_to_prompt(tags: dict) -> str:
 
     return ", ".join(prompt_parts)
 
+def extract_tags(user_input: str, provider: str = "cloudflare") -> dict:
+    """
+    Unified Interface
+    
+    Args:
+        user_input: description
+        provider: "openai" or "cloudflare"
+    
+    Returns:
+        dict with sd_prompt and keywords
+    """
+    if provider.lower() == "openai":
+        return extract_tags_openai(user_input)
+    elif provider.lower() == "cloudflare":
+        return extract_tags_cloudflare(user_input)
+    else:
+        raise ValueError(f"Unsupported provider: {provider}，please select 'openai' or 'cloudflare'")
+
 
 if __name__ == "__main__":
     print("请输入对图片的描述（或exit退出）：")
@@ -205,7 +332,7 @@ if __name__ == "__main__":
         if text.lower() in ("exit", "quit"):
             break
         try:
-            data = extract_tags(text)
+            data = extract_tags(text, provider="cloudflare")
             if not data:
                 print("无法识别为图片描述，请重新输入。\n")
                 continue
@@ -218,3 +345,4 @@ if __name__ == "__main__":
         except Exception as e:
             print("错误：", e)
             print("\n---\n请输入对图片的描述（或exit退出）：")
+
