@@ -166,12 +166,11 @@ if __name__ == "__main__":
         print("description:")
         
         user_text = input("> ").strip()
-        data = chat_generate_prompt(user_text)
-        print("\nPrompt:", data["prompt"])
+        #data = chat_generate_prompt(user_text)
+        #print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
-        #start_local_server("sd_xl_base_1.0.safetensors")
-        start_local_server("sd_xl_base_1.0.safetensors")
+        start_local_server("animagine-xl-3.1.safetensors")
         
         # Choose preset: fast / balanced / high
         chosen_preset = "high"
@@ -202,19 +201,34 @@ if __name__ == "__main__":
                                         # Lower preserves more original structure, higher redraws more.
             # "hr_second_pass_steps": 12  # Number of steps used in the second pass.
         }
-
-        
+        sd_overrides = {
+                        "steps": 26,
+                        "sampler_name": "DPM++ 3M SDE",       # 3M 系列更细腻
+                        "cfg_scale": 6.8,
+                        "enable_hr": True,
+                        "hr_scale": 1.6,
+                        "hr_upscaler": "R-ESRGAN 4x+ Anime6B",
+                        "denoising_strength": 0.30,
+                        "hr_second_pass_steps": 14
+                    }
+        positive_prompt="""1girl, solo, silver hair, blue eyes, school uniform, beige blazer, white shirt, red ribbon bow,
+                        black pleated skirt, thighhighs, sitting on classroom chair, hand touching ear, gentle blush,
+                        classroom interior, window side lighting, soft sunlight, depth of field, clean lineart,
+                        detailed hair, sharp focus, anime style, masterpiece, best quality, high detail, absurdres
+                        """
+        negative_prompt="""low quality, bad anatomy, bad hands, extra limbs, extra head, duplicate, multiple girls,
+                        deformed, blurry, text, watermark, signature, jpeg artifacts, cropped, worst quality
+                        """                    
         # Generate image
         urls = generate_image_from_prompt(
-            data["prompt"],
-            size="1024x1024",
+            #data["prompt"],
+            positive_prompt,
+            size="640x896",
             model="local",
             n=1,
             preset=chosen_preset,
             sd_params=sd_overrides,
-            negative_prompt="""low quality, worst quality, blurry, text, error, cropped,
-                                jpeg artifacts, signature, watermark, username, duplicate, multiple subjects
-                                """
+            negative_prompt=negative_prompt
         )
 
         img = urls[0]

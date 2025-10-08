@@ -65,12 +65,8 @@ def generate_image(
 
 
 if __name__ == "__main__":
-    demo_prompt = "(1girl:1.1), (solo), (masterpiece:1.2), (best quality:1.2), " \
-                  "white hair, transparent vinyl jacket, crop top, denim shorts, " \
-                  "cyberpunk city at night, neon signs, wet reflective street, " \
-                  "dynamic pose, looking at viewer, cinematic rim-light, volumetric fog, " \
-                  "illustration, anime style, extremely detailed, 8k, HDR"
-    urls = generate_image(demo_prompt, n=1, size="512x512")
+    demo_prompt = "1girl, solo, standing, facing viewer, long pink hair, blue eyes, pink hoodie, black pleated skirt, black knee-high socks, brown shoes, small hair accessory, white background, pink outline, delicate detail, soft lighting, cinematic lighting, sharp focus, masterpiece, best quality, absurdres"
+    urls = generate_image(demo_prompt, n=1, size="1024x1024")
     if urls:
         print("Image URL:", urls[0])
         webbrowser.open(urls[0])
