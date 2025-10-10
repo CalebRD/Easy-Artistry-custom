@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# 文件名：classification.py（已迁移到 openai>=1.0.0）
+# Filename: classification.py (migrated to openai>=1.0.0)
 # -----------------------------------------------------------------------------
 
 from openai import OpenAI
@@ -8,23 +8,23 @@ from dotenv import load_dotenv
 # -----------------------------------------------------------------------------
 
 
-load_dotenv() # 加载 .env 文件中的环境变量
+load_dotenv() # load environment variables from .env
 
 api_key = os.getenv("OPENAI_API_KEY", None)
 if api_key is None:
-    raise RuntimeError("无法获取 API Key，请先在 .env 文件中设置 OPENAI_API_KEY。")
+    raise RuntimeError("Cannot obtain API Key. Please set OPENAI_API_KEY in .env.")
 
 client = OpenAI(api_key=api_key)
 
 def classify_text(text: str) -> str:
     """
-    调用 OpenAI API 对输入文本进行分类（例如提取图片生成关键词）。
-    使用新版接口：client.completions.create(...)。
+    Call the OpenAI API to classify input text (for example, extract image-generation keywords).
+    Uses the new client.completions.create(...) interface.
     """
     try:
-        # 2. 原先的 openai.Completion.create(...) 改成 client.completions.create(...)
+    # 2. The previous openai.Completion.create(...) is replaced by client.completions.create(...)
         response = client.completions.create(
-            model="gpt-4.1",   # 用 model 替代 engine
+            model="gpt-4.1",   # use 'model' instead of 'engine'
             prompt=(
                 """**Role Description**  
                 You are a professional keyword-extraction specialist. 
@@ -77,17 +77,17 @@ def classify_text(text: str) -> str:
             temperature=0.0
         )
 
-        # 3. 新版返回结构依然使用 response.choices[0].text
+        # 3. The new response structure still uses response.choices[0].text
         result = response.choices[0].text.strip()
         return result
 
     except Exception as e:
-        # 4. 错误处理部分无需改动
-        return f"调用 API 时出错: {e}"
+        # 4. Error handling: return a readable message
+        return f"Error calling API: {e}"
 
 
 if __name__ == "__main__":
-    # 示例文本，可根据需要更换
-    sample_text = "森林里一只熊在吃蜂蜜，背景是阳光透过树叶的景象，前景有飞舞的花瓣。"
+    # Example text (replace as needed)
+    sample_text = "A bear eating honey in a forest, with sunlight filtering through the leaves in the background and petals floating in the foreground."
     classification_result = classify_text(sample_text)
-    print("文本分类结果:", classification_result)
+    print("Classification result:", classification_result)

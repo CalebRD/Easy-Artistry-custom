@@ -25,7 +25,7 @@ def generate_image(prompt: str, n: int = 1, size: str = "1024x1024") -> list[str
     )
     return [item.url for item in resp.data]
 
-# 自测
+# Self-test
 if __name__ == "__main__":
     prompt="A lone chrome cyber-samurai kneeling on an ancient moss-covered stone bridge that arches over a crystal clear stream, in a mist-filled cherry-blossom forest at dawn, golden volumetric light shafts filtering through the trees, swirling pink petals and gentle bioluminescent fireflies, ultra-realistic cinematic 8K, octane render"
     urls = generate_image(prompt,size="1024x1024") 

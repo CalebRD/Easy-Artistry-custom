@@ -203,7 +203,7 @@ if __name__ == "__main__":
         }
         sd_overrides = {
                         "steps": 26,
-                        "sampler_name": "DPM++ 3M SDE",       # 3M 系列更细腻
+                        "sampler_name": "DPM++ 3M SDE",       # 3M series produces finer details
                         "cfg_scale": 6.8,
                         "enable_hr": True,
                         "hr_scale": 1.6,

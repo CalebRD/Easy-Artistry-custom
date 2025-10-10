@@ -11,7 +11,7 @@ def _get_key():
     load_dotenv()
     k = os.getenv("OPENAI_API_KEY")
     if not k:
-        raise RuntimeError("请在 .env 中设置 OPENAI_API_KEY")
+           raise RuntimeError("Please set OPENAI_API_KEY in .env")
     return k
 
 def _get_cloudflare_config():
@@ -19,7 +19,7 @@ def _get_cloudflare_config():
     account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
     api_token = os.getenv("CLOUDFLARE_API_TOKEN")
     if not account_id or not api_token:
-        raise RuntimeError("请在 .env 中设置 CLOUDFLARE_ACCOUNT_ID 和 CLOUDFLARE_API_TOKEN")
+           raise RuntimeError("Please set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in .env")
     return account_id, api_token
 
 def extract_tags_cloudflare(user_input: str) -> dict:
@@ -112,14 +112,14 @@ def extract_tags_cloudflare(user_input: str) -> dict:
                 
             return json.loads(match.group())
         else:
-            raise RuntimeError(f"Cloudflare响应格式异常: {output}")
+              raise RuntimeError(f"Cloudflare response format error: {output}")
             
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Cloudflare API请求失败: {e}")
+           raise RuntimeError(f"Cloudflare API request failed: {e}")
     except KeyError as e:
-        raise RuntimeError(f"Cloudflare响应解析失败: {e}")
+           raise RuntimeError(f"Cloudflare response parsing failed: {e}")
     except Exception as e:
-        raise RuntimeError(f"Cloudflare处理失败: {e}")
+           raise RuntimeError(f"Cloudflare processing failed: {e}")
 
 
 
@@ -281,15 +281,15 @@ def tags_to_prompt(tags: dict) -> str:
     
     Output: combined SD-style prompt string.
     """
-    # 原始 sd_prompt（可能含有权重和修饰符）
+    # Original sd_prompt (may include weights and modifiers)
     sd_prompt = tags.get("sd_prompt", "").strip()
 
-    # keywords 内的部分
+    # Parts from keywords
     keywords = []
     for key in ["main_body", "background", "foreground"]:
         keywords.extend(tags.get("keywords", {}).get(key, []))
 
-    # 清理空白并去重（但保留顺序）
+    # Clean whitespace and deduplicate while preserving order
     keywords_cleaned = []
     seen = set()
     for kw in keywords:
@@ -298,7 +298,7 @@ def tags_to_prompt(tags: dict) -> str:
             keywords_cleaned.append(kw_stripped)
             seen.add(kw_stripped)
 
-    # 合并：先保留 sd_prompt，然后追加 keywords（避免重复）
+    # Merge: keep sd_prompt first, then append keywords (avoid duplicates)
     if sd_prompt:
         prompt_parts = [sd_prompt] + keywords_cleaned
     else:
@@ -322,11 +322,11 @@ def extract_tags(user_input: str, provider: str = "cloudflare") -> dict:
     elif provider.lower() == "cloudflare":
         return extract_tags_cloudflare(user_input)
     else:
-        raise ValueError(f"Unsupported provider: {provider}，please select 'openai' or 'cloudflare'")
+        raise ValueError(f"Unsupported provider: {provider}, please select 'openai' or 'cloudflare'")
 
 
 if __name__ == "__main__":
-    print("请输入对图片的描述（或exit退出）：")
+    print("Please enter a description of the image (or type exit to quit):")
     while True:
         text = input("> ").strip()
         if text.lower() in ("exit", "quit"):
@@ -334,15 +334,15 @@ if __name__ == "__main__":
         try:
             data = extract_tags(text, provider="cloudflare")
             if not data:
-                print("无法识别为图片描述，请重新输入。\n")
+                print("Input not recognized as an image description, please try again.\n")
                 continue
-            print("\n提取的关键词：")
+            print("\nExtracted keywords:")
             print(json.dumps(data, ensure_ascii=False, indent=2))
             prompt = tags_to_prompt(data)
-            print("\n生成的Prompt：")
+            print("\nGenerated Prompt:")
             print(prompt)
-            print("\n---\n请输入对图片的描述（或exit退出）：")
+            print("\n---\nPlease enter a description of the image (or type exit to quit):")
         except Exception as e:
-            print("错误：", e)
-            print("\n---\n请输入对图片的描述（或exit退出）：")
+            print("Error:", e)
+            print("\n---\nPlease enter a description of the image (or type exit to quit):")
 
