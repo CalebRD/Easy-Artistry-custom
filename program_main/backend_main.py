@@ -232,7 +232,9 @@ if __name__ == "__main__":
                         """
         negative_prompt="""low quality, bad anatomy, bad hands, extra limbs, extra head, duplicate, multiple girls,
                         deformed, blurry, text, watermark, signature, jpeg artifacts, cropped, worst quality
-                        """                    
+                        """   
+        negative_prompt="""(worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grainy, blurry, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped:1.4), jpeg artifacts, signature, watermark, username, artist name, text, error, extra limbs, missing arms, missing legs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, bad body, bad proportions, gross proportions, text, error, missing fingers, missing limbs, extra limbs, extra fingers
+                        """              
         # Generate image
         urls = generate_image_from_prompt(
             #data["prompt"],
