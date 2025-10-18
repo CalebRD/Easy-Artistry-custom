@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-backend_main.py  – chat → prompt, local-server lifecycle, unified image generation
+backend_main.py   chat → prompt, local-server lifecycle, unified image generation
 """
 
 import os, sys, re, time, webbrowser
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         #print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
-        start_local_server("animagine-xl-3.1.safetensors")
+        start_local_server("sd_xl_base_1.0.safetensors")
         
         # Choose preset: fast / balanced / high
         chosen_preset = "high"
@@ -216,8 +216,7 @@ if __name__ == "__main__":
                         classroom interior, window side lighting, soft sunlight, depth of field, clean lineart,
                         detailed hair, sharp focus, anime style, masterpiece, best quality, high detail, absurdres
                         """
-        negative_prompt="""low quality, bad anatomy, bad hands, extra limbs, extra head, duplicate, multiple girls,
-                        deformed, blurry, text, watermark, signature, jpeg artifacts, cropped, worst quality
+        negative_prompt="""(worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grainy, blurry, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped:1.4), jpeg artifacts, signature, watermark, username, artist name, text, error, extra limbs, missing arms, missing legs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, bad body, bad proportions, gross proportions, text, error, missing fingers, missing limbs, extra limbs, extra fingers
                         """                    
         # Generate image
         urls = generate_image_from_prompt(
