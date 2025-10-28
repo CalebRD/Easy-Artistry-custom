@@ -166,8 +166,8 @@ if __name__ == "__main__":
         print("description:")
         
         user_text = input("> ").strip()
-        #data = chat_generate_prompt(user_text)
-        #print("\nPrompt:", data["prompt"])
+        data = chat_generate_prompt(user_text)
+        print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
         start_local_server("sd_xl_base_1.0.safetensors")

@@ -28,10 +28,10 @@ conda activate easy_art
 
 ```bash
 # Start local A1111 (GPU or CPU-only)
-python program_main/serve_local_sd.py --port 7860
+python backend/serve_local_sd.py --port 7860
 
 # Unified backend smoke test
-python program_main/backend_main.py
+python backend/backend_main.py
 # Enter a description; the generated image will open automatically.
 ```
 
@@ -80,8 +80,8 @@ curl -L -o stable-diffusion-webui/models/Stable-diffusion/v1-5-pruned.safetensor
 ### 2.5 Run & verify
 
 ```bash
-python program_main/serve_local_sd.py --port 7860
-python program_main/backend_main.py
+python backend/serve_local_sd.py --port 7860
+python backend/backend_main.py
 ```
 If you see **“WebUI is ready at http://127.0.0.1:7860”** and an image opens, the install succeeded.
 
@@ -111,7 +111,7 @@ MODELSLAB_API_KEY=xxxxxxxxxxxxxxxx   # only needed for cloud SD
 ## Minimal usage (backend)
 
 ```python
-from backend_main import start_local_server, generate_image_from_prompt, stop_local_server
+from backend.backend_main import start_local_server, generate_image_from_prompt, stop_local_server
 
 start_local_server()  # idempotent, loads default SD-1.5
 urls = generate_image_from_prompt("cat astronaut, anime style", model="local")

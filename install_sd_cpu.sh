@@ -89,8 +89,8 @@ cat <<'TXT'
 
 Next steps:
   1) conda activate easy_art
-  2) python program_main/serve_local_sd.py --port 7860
-  3) python program_main/backend_main.py   # smoke test; follow CLI prompt
+  2) python backend/serve_local_sd.py --port 7860
+  3) python backend/backend_main.py   # smoke test; follow CLI prompt
 
 Notes:
 - GPU detected → WebUI auto-starts with xformers/half (if available).

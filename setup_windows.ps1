@@ -62,5 +62,5 @@ if (-not (Test-Path $modelOut)) {
 Write-Host "✅ Done."
 Write-Host "Next:"
 Write-Host "  conda activate $envName"
-Write-Host "  python program_main\serve_local_sd.py --port 7860"
-Write-Host "  python program_main\backend_main.py"
+Write-Host "  python backend\serve_local_sd.py --port 7860"
+Write-Host "  python backend\backend_main.py"

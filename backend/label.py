@@ -121,8 +121,6 @@ def extract_tags_cloudflare(user_input: str) -> dict:
     except Exception as e:
            raise RuntimeError(f"Cloudflare processing failed: {e}")
 
-
-
 def extract_tags_openai(user_input: str) -> dict:
     """
     returns a dictionary with keys "main_body", "background", and "foreground",
@@ -264,7 +262,6 @@ def extract_tags_openai(user_input: str) -> dict:
 
     return json.loads(match.group())
 
-
 def tags_to_prompt(tags: dict) -> str:
     """
     Merge Stable Diffusion style prompt.
@@ -306,7 +303,7 @@ def tags_to_prompt(tags: dict) -> str:
 
     return ", ".join(prompt_parts)
 
-def extract_tags(user_input: str, provider: str = "cloudflare") -> dict:
+def extract_tags(user_input: str, provider: str = "openai") -> dict:
     """
     Unified Interface
     
@@ -332,7 +329,7 @@ if __name__ == "__main__":
         if text.lower() in ("exit", "quit"):
             break
         try:
-            data = extract_tags(text, provider="cloudflare")
+            data = extract_tags(text, provider="openai")
             if not data:
                 print("Input not recognized as an image description, please try again.\n")
                 continue

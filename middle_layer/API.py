@@ -33,6 +33,9 @@ from pydantic import BaseModel, Field, validator
 
 # Import your existing entry point. This must exist.
 # Signature we call: generate_image_from_prompt(prompt, size, n, model, preset, sd_params, negative_prompt)
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'backend'))
 from backend_main import generate_image_from_prompt
 
 # -----------------------------------------------------------------------------

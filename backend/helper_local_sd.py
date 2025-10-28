@@ -3,7 +3,7 @@ import subprocess, time, requests, psutil
 
 def start_sd(port=7860) -> subprocess.Popen:
     proc = subprocess.Popen(
-        ["python", "program_main\serve_local_sd.py", "--port", str(port)]
+        ["python", "backend/server_local_sd.py", "--port", str(port)]
     )
     _wait_ready(port)
     return proc
