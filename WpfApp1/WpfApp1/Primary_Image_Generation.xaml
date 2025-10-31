@@ -1,40 +1,91 @@
 <Window x:Class="YourApp.Primary_Image_Generation"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Primary Image Generation" Height="1000" Width="1400"
+        Title="Primary Image Generation"
+        Width="1000" Height="700"
+        MinWidth="600" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
         Background="LightGray">
 
-    <Grid Margin="10">
-
-        <Border CornerRadius="37" BorderBrush="Gray" BorderThickness="4" Background="White"
-                Width="987" Height="555" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="32,29,0,0">
-            <Image x:Name="GeneratedImage" Stretch="Uniform"/>
-        </Border>
-
-        <Border CornerRadius="37" Background="LightBlue" Width="706" Height="220"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="32,608,0,0">
+    <Grid Margin="20">
+        <!-- Outer black rounded border -->
+        <Border CornerRadius="71" BorderBrush="Black" BorderThickness="4" Background="Transparent">
             <Grid Margin="20">
-                <TextBlock Text="Image Prompt" FontSize="16" Margin="0,0,0,140" Foreground="Black"/>
-                <TextBox x:Name="ChatInput" VerticalAlignment="Bottom" Height="80" FontSize="16" Text="Type Prompt Here..."
-                Foreground="Gray"
-                GotFocus="ChatInput_GotFocus"
-                LostFocus="ChatInput_LostFocus"/>
+                <Grid.RowDefinitions>
+                    <!-- Top: large image -->
+                    <RowDefinition Height="4*"/>
+                    <!-- Bottom: prompt + buttons -->
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Large image area -->
+                <Border Grid.Row="0" CornerRadius="37" BorderBrush="Gray" BorderThickness="4" Background="White" Margin="0,0,0,10">
+                    <Image x:Name="GeneratedImage" Stretch="Uniform"/>
+                </Border>
+
+                <!-- Bottom area -->
+                <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <!-- Prompt area -->
+                        <ColumnDefinition Width="3*"/>
+                        <!-- Buttons area -->
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Prompt blue rounded border -->
+                    <Border Grid.Column="0" CornerRadius="37" Background="LightBlue" BorderBrush="Gray" BorderThickness="0">
+                        <Grid Margin="20">
+                            <TextBlock Text="Image Prompt" FontSize="16" Margin="0,0,0,80" Foreground="Black"/>
+                            <TextBox x:Name="ChatInput" VerticalAlignment="Bottom" Height="80" FontSize="16"
+                                     Text="Type Prompt Here..." Foreground="Gray"
+                                     GotFocus="ChatInput_GotFocus" LostFocus="ChatInput_LostFocus"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Buttons stacked vertically -->
+                    <Grid Grid.Column="1" Margin="10,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Generate Button -->
+                        <Button Grid.Row="0" FontSize="20" FontWeight="Bold"
+                                Background="LightBlue" Foreground="Black" BorderBrush="Gray" BorderThickness="0"
+                                Click="GenerateButton_Click" Margin="0,0,0,10">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="37">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            Generate
+                        </Button>
+
+                        <!-- Save Button -->
+                        <Button Grid.Row="1" FontSize="20" FontWeight="Bold"
+                                Background="LightBlue" Foreground="Black" BorderBrush="Gray" BorderThickness="0"
+                                Click="SaveButton_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="37">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            Save Image
+                        </Button>
+                    </Grid>
+                </Grid>
+
             </Grid>
         </Border>
-
-        <Button x:Name="GenerateButton" Content="Generate" FontSize="20" FontWeight="Bold"
-                Background="LightBlue" Foreground="Black" BorderBrush="Gray" BorderThickness="0"
-                Width="257" Height="80"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="762,608,0,0"/>
-
-        <Button x:Name="SaveButton" Content="Save Image" FontSize="20" FontWeight="Bold"
-                Background="LightBlue" Foreground="Black" BorderBrush="Gray" BorderThickness="0"
-                Width="257" Height="80"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="762,748,0,0"/>
-
-        <Border CornerRadius="71" BorderBrush="Black" BorderThickness="4" Background="Transparent"
-                Width="1051" Height="951" HorizontalAlignment="Left" VerticalAlignment="Top"
-                IsHitTestVisible="False"/>
-        
     </Grid>
 </Window>
