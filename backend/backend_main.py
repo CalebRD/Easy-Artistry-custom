@@ -21,11 +21,11 @@ from local_sd import _switch_model                            # checkpoint hot-s
 # 1) chat → prompt
 # ======================================================================
 #DELL3 api DO NOT NEED TO CALL THIS FUNCTION,just call generate_image_from_prompt
-def chat_generate_prompt(user_input: str) -> Dict[str, Any]:
+def chat_generate_prompt(user_input: str, provider: str) -> Dict[str, Any]:
     user_input = user_input.strip()
     if not user_input:
         raise ValueError("user_input cannot be empty")
-    tags = extract_tags(user_input)
+    tags = extract_tags(user_input, provider)
     return {"tags": tags, "prompt": tags_to_prompt(tags)}
 
 # ======================================================================
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         print("description:")
         
         user_text = input("> ").strip()
-        data = chat_generate_prompt(user_text)
+        data = chat_generate_prompt(user_text, provider="openai")
         print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
