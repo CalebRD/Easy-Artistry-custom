@@ -1,1 +1,44 @@
+# ---- General tooling ----
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.Python
+.venv/
+venv/
+env/
+
+# ---- Environment / secrets ----
 .env
+.env.*
+
+# ---- .NET / C# build artifacts ----
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.cache
+
+# ---- Node / JS leftovers ----
+node_modules/
+package-lock.json
+
+# ---- Project outputs ----
+outputs/
+
+# ---- Stable Diffusion WebUI (large vendor assets) ----
+backend/stable-diffusion-webui/
+
+# ---- Misc generated files ----
+*.swp
+*.lock
+*.sqlite*

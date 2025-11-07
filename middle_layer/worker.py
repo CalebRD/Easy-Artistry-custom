@@ -1,29 +1,51 @@
 # -*- coding: utf-8 -*-
 # middle_layer/worker.py
-# JSON-Lines (一行一个 JSON) 协议的本机 Worker。
-# C# 子进程启动本脚本；stdin 收请求、stdout 回响应。
+# A native Worker for the JSON-Lines (one JSON per line) protocol.
+# This script is started by a C# subprocess; it receives requests from stdin and sends responses to stdout.
 
 import sys, os, json, traceback, contextlib
 from pathlib import Path
 
-# ---------- 让 Python 能 import backend 目录 ----------
+# ---------- Make Python able to import the backend directory ----------
 PROJ_ROOT = Path(__file__).resolve().parents[1]           # .../Easy-Artistry-custom
 BACKEND   = PROJ_ROOT / "backend"
-os.chdir(PROJ_ROOT.as_posix())                            # 相对路径在项目根
+os.chdir(PROJ_ROOT.as_posix())                            # Relative paths are based on the project root
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-# ---------- 导入你的门面函数 ----------
-from backend.backend_main import generate_image_from_prompt  # 现有统一入口
+# ---------- Import your facade functions ----------
+from backend.backend_main import generate_image_from_prompt
+from backend.local_sd import start_server as _start_server
+from backend.local_sd import shutdown_server as _shutdown_server
+from backend.local_sd import _switch_model as _switch_model_inner
 
-# ---------- 方法注册表（后续功能只需在此注册即可） ----------
 REGISTRY = {}
+
 def register(ns: str, table: dict):
     for name, fn in table.items():
         REGISTRY[f"{ns}.{name}"] = fn
 
+# 1) Main image generation function
 register("images", {
-    "generate": generate_image_from_prompt,   # 现在只接这一个主功能
+    "generate": generate_image_from_prompt,
+})
+
+# 2) Local SD server management - expose stable names to the outside
+def start_local_sd(model_path: str | None = None):
+    # Idempotent, if local_sd.start_server is already running, it will return directly
+    _start_server(model_path)
+
+def shutdown_local_sd():
+    _shutdown_server()
+
+def switch_local_model(model_name: str, timeout: int = 90):
+    # Wrap it in a layer to prevent the frontend from directly depending on the internal function name `_switch_model`
+    _switch_model_inner(model_name, timeout=timeout)
+
+register("local_sd", {
+    "start": start_local_sd,            # method: "local_sd.start"
+    "shutdown": shutdown_local_sd,      # method: "local_sd.shutdown"
+    "switch_model": switch_local_model, # method: "local_sd.switch_model"
 })
 
 def dispatch(method: str, params: dict):
@@ -32,7 +54,7 @@ def dispatch(method: str, params: dict):
         raise ValueError(f"Unknown method: {method}")
     return fn(**(params or {}))
 
-# 避免 backend 里的 print 污染协议：把 stdout 暂时重定向到 stderr
+# Avoid polluting the protocol with prints from the backend: temporarily redirect stdout to stderr
 @contextlib.contextmanager
 def redirect_print_to_stderr():
     old = sys.stdout
@@ -62,7 +84,7 @@ def handle_one(line: str):
     sys.__stdout__.flush()
 
 def main():
-    # -u/无缓冲由 C# 进程负责；这里也保证按行处理。
+    # -u/unbuffered is handled by the C# process; here we also ensure line-by-line processing.
     while True:
         line = sys.stdin.readline()
         if not line:
