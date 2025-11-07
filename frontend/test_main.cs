@@ -31,7 +31,21 @@ internal static class Program
         Console.WriteLine($"使用 Python: {pythonExe}");
         Console.WriteLine($"使用 Worker: {workerPath}");
 
-        using var client = new EaClient(pythonExe, workerPath, projectRoot);
+        Console.Write("是否打开独立日志窗口 (y/N)：");
+        var logChoice = Console.ReadLine();
+        var openLogWindow = string.Equals(logChoice?.Trim(), "y", StringComparison.OrdinalIgnoreCase);
+        string? logFilePath = null;
+        if (openLogWindow)
+        {
+            logFilePath = Path.Combine(projectRoot, "worker.log");
+        }
+
+        using var client = new EaClient(
+            pythonExe,
+            workerPath,
+            projectRoot,
+            logFilePath: logFilePath,
+            launchLogViewer: openLogWindow);
 
         const string apiDefaultPrompt = "highly detailed illustration of a silver-haired girl in a classroom, soft sunlight, anime style, best quality";
         const string localDefaultPrompt = "1girl, solo, silver hair, blue eyes, school uniform, beige blazer, white shirt, red ribbon bow, black pleated skirt, thighhighs, sitting on classroom chair, gentle blush, soft sunlight, masterpiece";
