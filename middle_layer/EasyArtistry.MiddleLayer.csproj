@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- 可选：把 worker.py 打到前端 bin 目录，便于部署 -->
+  <ItemGroup>
+    <None Include="worker.py" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
