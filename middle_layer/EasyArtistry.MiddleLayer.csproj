@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!-- 可选：把 worker.py 打到前端 bin 目录，便于部署 -->
   <ItemGroup>
     <None Include="worker.py" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

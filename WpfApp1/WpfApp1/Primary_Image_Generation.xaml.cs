@@ -1,3 +1,6 @@
+using EasyArtistry.MiddleLayer;
+using System.IO;
+using System.Windows.Media.Imaging;
 using System.Windows;
 using System.Windows.Media;
 
@@ -5,16 +8,21 @@ namespace YourApp
 {
     public partial class Primary_Image_Generation : Window
     {
+        private EaClient _client;
         public Primary_Image_Generation()
         {
             InitializeComponent();
-            // this.SizeChanged += (s, e) =>
-            // {
-            //     if (e.WidthChanged)
-            //     {
-            //         this.Height = this.Width * 700.0 / 1000.0;
-            //     }
-            // };
+            string pythonExe = @"C:\Users\Zheng Zhu\.conda\envs\easyart\python.exe";
+            var workerPy = @"C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer";
+            MessageBox.Show(workerPy, "Debug: workerPy");
+            try
+            {
+                _client = new EaClient(pythonExe, workerPy);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start backend: {ex.Message}");
+            }
         }
 
         // Input box got focus

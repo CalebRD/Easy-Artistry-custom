@@ -1,0 +1,13 @@
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\bin\Debug\net8.0\worker.py
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\bin\Debug\net8.0\EasyArtistry.MiddleLayer.deps.json
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\bin\Debug\net8.0\EasyArtistry.MiddleLayer.dll
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\bin\Debug\net8.0\EasyArtistry.MiddleLayer.pdb
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.AssemblyInfoInputs.cache
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.AssemblyInfo.cs
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.csproj.CoreCompileInputs.cache
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.sourcelink.json
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.dll
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\refint\EasyArtistry.MiddleLayer.dll
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\EasyArtistry.MiddleLayer.pdb
+C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\obj\Debug\net8.0\ref\EasyArtistry.MiddleLayer.dll

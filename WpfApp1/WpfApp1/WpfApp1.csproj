@@ -8,4 +8,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\middle_layer\EasyArtistry.MiddleLayer.csproj" />
+  </ItemGroup>
+
 </Project>
