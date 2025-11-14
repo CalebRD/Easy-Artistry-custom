@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EasyArtistry.MiddleLayer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d635aed2dd4ff00e7057c837597bf3aab3fadd2b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ca1dbe0a169b3d3a26b9ea963dfd554b213a308")]
 [assembly: System.Reflection.AssemblyProductAttribute("EasyArtistry.MiddleLayer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EasyArtistry.MiddleLayer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

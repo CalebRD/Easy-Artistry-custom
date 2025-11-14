@@ -13,11 +13,15 @@ namespace YourApp
         {
             InitializeComponent();
             string pythonExe = @"C:\Users\Zheng Zhu\.conda\envs\easyart\python.exe";
-            var workerPy = @"C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer";
+            var workerPy = @"C:\D\programming\RPI_CSCI\EasyArtistry\Easy-Artistry-custom\middle_layer\worker.py";
             MessageBox.Show(workerPy, "Debug: workerPy");
             try
             {
                 _client = new EaClient(pythonExe, workerPy);
+                _client.OnError += (msg) =>
+                {
+                    Console.Error.WriteLine($"[Python STDERR] {msg}");
+                };
             }
             catch (Exception ex)
             {
@@ -46,7 +50,7 @@ namespace YourApp
         }
 
         // Generate Button
-        private void GenerateButton_Click(object sender, RoutedEventArgs e)
+        private async void GenerateButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ChatInput.Text) || ChatInput.Text == "Type Prompt Here...")
             {
@@ -54,9 +58,47 @@ namespace YourApp
                 return;
             }
 
-            // Backend API here
-            MessageBox.Show($"Generating image with prompt:\n{ChatInput.Text}");
+            string prompt = ChatInput.Text;
+            GenerateButton.IsEnabled = false;
+            GenerateButton.Content = "Generating...";
+
+            try
+            {
+                var images = await _client.GenerateAsync(prompt, size: "512x512", n: 1);
+                if (images.Count > 0)
+                {
+                    string base64 = images[0];
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.StreamSource = new MemoryStream(Convert.FromBase64String(base64));
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+
+                    GeneratedImage.Source = bitmap;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error generating image:\n" + ex.Message);
+            }
+            finally
+            {
+                GenerateButton.IsEnabled = true;
+                GenerateButton.Content = "Generate";
+            }
         }
+        // private void GenerateButton_Click(object sender, RoutedEventArgs e)
+        // {
+        //     if (string.IsNullOrWhiteSpace(ChatInput.Text) || ChatInput.Text == "Type Prompt Here...")
+        //     {
+        //         MessageBox.Show("Please enter a prompt first.");
+        //         return;
+        //     }
+
+        //     // Backend API here
+        //     MessageBox.Show($"Generating image with prompt:\n{ChatInput.Text}");
+        // }
 
         // Save Button
         private void SaveButton_Click(object sender, RoutedEventArgs e)

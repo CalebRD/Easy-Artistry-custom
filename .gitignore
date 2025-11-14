@@ -4,3 +4,4 @@ backend/__pycache__/image.cpython-310.pyc
 backend/__pycache__/local_sd.cpython-310.pyc
 backend/__pycache__/label.cpython-310.pyc
 backend/__pycache__/model_lab.cpython-310.pyc
+/backend/stable-diffusion-webui

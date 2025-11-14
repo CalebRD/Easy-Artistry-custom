@@ -1,11 +1,13 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Collections.Concurrent;
+using System.Windows;
 
 namespace EasyArtistry.MiddleLayer;
 
 public sealed class EaClient : IDisposable
 {
+    public event Action<string>? OnError;
     private readonly Process _proc;
     private readonly StreamWriter _stdin;
     private readonly Task _reader;
@@ -62,13 +64,22 @@ public sealed class EaClient : IDisposable
         });
 
         // Forward worker stderr to the parent console for easier debugging
+        // _stderrReader = Task.Run(async () =>
+        // {
+        //     using var sr = _proc.StandardError;
+        //     string? line;
+        //     while ((line = await sr.ReadLineAsync()) != null)
+        //     {
+        //         OnError?.Invoke(line);
+        //     }
+        // });
         _stderrReader = Task.Run(async () =>
         {
             using var sr = _proc.StandardError;
             string? line;
             while ((line = await sr.ReadLineAsync()) != null)
             {
-                Console.Error.WriteLine($"[worker] {line}");
+                Console.Error.WriteLine($"[Python STDERR] {line}");
             }
         });
     }
