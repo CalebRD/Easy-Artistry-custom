@@ -1,0 +1,12 @@
+# 配置优先级：python > conda_prefix > conda_env
+# 示例：使用特定解释器
+# python=C:\Users\lin\.conda\envs\easy_art\python.exe
+
+# 示例：指定已有的 Conda 环境路径
+# conda_prefix=C:\Users\lin\.conda\envs\easy_art
+
+# 示例：按环境名调用 `conda run`
+conda_env=easy_art
+
+# 如果 conda 不在 PATH，可提供显式路径
+# conda_path=C:\Users\lin\miniconda3\condabin\conda.bat

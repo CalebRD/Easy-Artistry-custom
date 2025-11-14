@@ -1,53 +1,35 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Windows;
 
 namespace EasyArtistry.MiddleLayer;
 
 public sealed class EaClient : IDisposable
 {
+    public event Action<string>? OnError;
     private readonly Process _proc;
     private readonly StreamWriter _stdin;
     private readonly Task _reader;
     private readonly Task _stderrReader;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> _pending = new();
-    private readonly StreamWriter? _logWriter;
-    private readonly Process? _logViewerProcess;
-    private readonly string? _logFilePath;
 
-    public EaClient(
-        string pythonExe,
-        string workerPy,
-        string? workingDir = null,
-        string? logFilePath = null,
-        bool launchLogViewer = false)
+    public EaClient(string pythonExe, string workerPy, string? workingDir = null, string? extraArguments = null)
     {
-        if (launchLogViewer && string.IsNullOrWhiteSpace(logFilePath))
-        {
-            logFilePath = Path.Combine(Path.GetTempPath(), $"ea_worker_{Guid.NewGuid():N}.log");
-        }
-
-        if (!string.IsNullOrWhiteSpace(logFilePath))
-        {
-            _logFilePath = logFilePath;
-            var fs = new FileStream(_logFilePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-            _logWriter = new StreamWriter(fs, Encoding.UTF8) { AutoFlush = true };
-        }
+        var arguments = string.IsNullOrWhiteSpace(extraArguments)
+            ? $"-u \"{workerPy}\""
+            : $"{extraArguments} -u \"{workerPy}\"";
 
         var psi = new ProcessStartInfo
         {
             FileName = pythonExe,
-            Arguments = $"-u \"" + workerPy + "\"",  // -u: unbuffered, ensures real-time communication
+            Arguments = arguments,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
-            WorkingDirectory = workingDir ?? Path.GetDirectoryName(workerPy)!,
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8
+            WorkingDirectory = workingDir ?? Path.GetDirectoryName(workerPy)!
         };
 
         _proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -86,32 +68,25 @@ public sealed class EaClient : IDisposable
         });
 
         // Forward worker stderr to the parent console for easier debugging
+        // _stderrReader = Task.Run(async () =>
+        // {
+        //     using var sr = _proc.StandardError;
+        //     string? line;
+        //     while ((line = await sr.ReadLineAsync()) != null)
+        //     {
+        //         OnError?.Invoke(line);
+        //     }
+        // });
         _stderrReader = Task.Run(async () =>
         {
             using var sr = _proc.StandardError;
             string? line;
             while ((line = await sr.ReadLineAsync()) != null)
             {
-                Console.Error.WriteLine($"[worker] {line}");
-                if (_logWriter is not null)
-                {
-                    await _logWriter.WriteLineAsync(line);
-                }
+                OnError?.Invoke(line);
+                Console.Error.WriteLine($"[Python STDERR] {line}");
             }
         });
-
-        if (launchLogViewer && _logFilePath is not null)
-        {
-            _logViewerProcess = LaunchLogViewer(_logFilePath);
-            if (_logViewerProcess is null)
-            {
-                Console.WriteLine($"未能自动打开日志窗口，可手动查看: {_logFilePath}");
-            }
-            else
-            {
-                Console.WriteLine($"Python 日志写入 {_logFilePath}，已开启独立窗口实时查看。");
-            }
-        }
     }
 
     // Core call: send a {id, method, params} and wait for the corresponding response
@@ -270,62 +245,6 @@ public sealed class EaClient : IDisposable
             // ignore
         }
 
-        try
-        {
-            _logWriter?.Dispose();
-        }
-        catch
-        {
-            // ignore
-        }
-
         _proc.Dispose();
-    }
-
-    private static Process? LaunchLogViewer(string logFile)
-    {
-        try
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var escapedPath = logFile.Replace("'", "''");
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoExit -Command \"Get-Content -Path '{escapedPath}' -Wait\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = false,
-                };
-                return Process.Start(psi);
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                var script = $"tell application \"Terminal\" to do script \"tail -f {logFile.Replace("\"", "\\\"")}\"";
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "osascript",
-                    Arguments = $"-e \"{script}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = false,
-                };
-                return Process.Start(psi);
-            }
-
-            // Linux / others - try xterm
-            var escaped = logFile.Replace("\"", "\\\"");
-            var linuxPsi = new ProcessStartInfo
-            {
-                FileName = "/bin/sh",
-                Arguments = $"-c \"(command -v x-terminal-emulator >/dev/null && x-terminal-emulator -e tail -f \"\"{escaped}\"\") || (command -v gnome-terminal >/dev/null && gnome-terminal -- tail -f \"\"{escaped}\"\") || (command -v konsole >/dev/null && konsole -e tail -f \"\"{escaped}\"\") || tail -f \"\"{escaped}\"\"\"",
-                UseShellExecute = false,
-                CreateNoWindow = false,
-            };
-            return Process.Start(linuxPsi);
-        }
-        catch
-        {
-            return null;
-        }
     }
 }
