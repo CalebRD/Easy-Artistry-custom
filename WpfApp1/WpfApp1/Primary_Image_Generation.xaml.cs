@@ -91,12 +91,12 @@ namespace YourApp
             {
                 var images = await _client.GenerateAsync(
                     prompt: prompt,
-                    size: "512x512",
+                    size: "1024x1024",
                     n: 1,
-                    model: "stable-diffusion",
+                    model: "dalle",
                     preset: "balanced",
-                    negativePrompt: "bad quality",
-                    sdOverrides: new { }
+                    negativePrompt: "",
+                    sdOverrides: null
                 );
                 if (images.Count > 0)
                 {

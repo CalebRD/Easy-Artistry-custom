@@ -36,6 +36,17 @@ def _append_log(message: str) -> None:
 
 _append_log("[startup] worker initializing")
 
+def _append_log(message: str) -> None:
+    """Append a single line to backend.log."""
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(LOG_PATH, "a", encoding="utf-8") as log_file:
+        log_file.write(message)
+        if not message.endswith("\n"):
+            log_file.write("\n")
+
+
+_append_log("[startup] worker initializing")
+
 # ---------- Import your facade functions ----------
 try:
     from backend.backend_main import generate_image_from_prompt
