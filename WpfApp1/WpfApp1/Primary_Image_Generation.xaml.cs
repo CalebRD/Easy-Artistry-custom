@@ -14,7 +14,7 @@ namespace YourApp
     public partial class Primary_Image_Generation : Window
     {
         private static readonly HttpClient HttpClient = new();
-        private EaClient _client;
+        private EaClient? _client;
         private string? _lastImagePayload;
         public Primary_Image_Generation()
         {
@@ -83,6 +83,12 @@ namespace YourApp
                 return;
             }
 
+            if (_client is null)
+            {
+                MessageBox.Show("Backend client is not available.");
+                return;
+            }
+
             string prompt = ChatInput.Text;
             GenerateButton.IsEnabled = false;
             GenerateButton.Content = "Generating...";
@@ -91,7 +97,7 @@ namespace YourApp
             {
                 var images = await _client.GenerateAsync(
                     prompt: prompt,
-                    size: "1024x1024",
+                        size: "1024x1024",
                     n: 1,
                     model: "dalle",
                     preset: "balanced",
