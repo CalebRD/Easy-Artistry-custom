@@ -127,7 +127,7 @@ def generate_image_from_prompt(
           (add ``file:///`` prefix or serve via static route to display).  
         • For **cloud SD / DALL·E**  direct HTTPS image URLs.
     """
-
+    print("Entered GIFP",file=sys.stderr)
     if not re.match(r"^\d+x\d+$", size):
         raise ValueError('size must be like "1024x1024"')
     if sd_params and not isinstance(sd_params, dict):
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         print("description:")
         
         user_text = input("> ").strip()
-        data = chat_generate_prompt(user_text, provider="openai")
+        data = chat_generate_prompt(user_text, provider="cloudflare")
         print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)
@@ -219,6 +219,7 @@ if __name__ == "__main__":
         negative_prompt="""(worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grainy, blurry, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped:1.4), jpeg artifacts, signature, watermark, username, artist name, text, error, extra limbs, missing arms, missing legs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, bad body, bad proportions, gross proportions, text, error, missing fingers, missing limbs, extra limbs, extra fingers
                         """                    
         # Generate image
+        print("Generating...")
         urls = generate_image_from_prompt(
             #data["prompt"],
             positive_prompt,
