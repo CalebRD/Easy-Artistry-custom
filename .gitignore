@@ -19,6 +19,7 @@ __pycache__/
 .venv/
 venv/
 env/
+easy_art/
 
 # ---- Environment / secrets ----
 .env
@@ -45,6 +46,33 @@ outputs/
 worker.log
 backend.log
 backend-stderr.log
+
+# ---- .NET intermediate files ----
+# Dotnet build artifacts (scoped to bin/obj)
+**/bin/**/*
+**/obj/**/*
+**/bin/
+**/obj/
+project.assets.json
+*.nuget.props
+*.nuget.targets
+*.nuget.g.props
+*.nuget.g.targets
+*.nuget.cache
+*.nuget.dgspec.json
+*.deps.json
+*.runtimeconfig.json
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.AssemblyAttributes.cs
+*.AssemblyInfo.cs
+*.Assets.cache
+*.FileListAbsolute.txt
+*.AssemblyInfoInputs.cache
+*.CoreCompileInputs.cache
+*.sourceLink.json
+
+# Roslyn analyzers cache
+.sonarqube/
 
 # ---- Stable Diffusion WebUI (large vendor assets) ----
 backend/stable-diffusion-webui/
