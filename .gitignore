@@ -4,9 +4,13 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+*.lck
+*.lock
+*.orig
 
 # ---- Python ----
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
@@ -23,10 +27,14 @@ env/
 # ---- .NET / C# build artifacts ----
 bin/
 obj/
+**/bin/
+**/obj/
 .vs/
 *.user
 *.suo
 *.cache
+*.opendb
+*.VC.db
 
 # ---- Node / JS leftovers ----
 node_modules/
@@ -35,11 +43,23 @@ package-lock.json
 # ---- Project outputs ----
 outputs/
 worker.log
+backend.log
+backend-stderr.log
 
 # ---- Stable Diffusion WebUI (large vendor assets) ----
 backend/stable-diffusion-webui/
 
+# ---- Large model binaries ----
+*.ckpt
+*.safetensors
+*.pth
+*.pt
+*.onnx
+
+# ---- IDE/workspace settings ----
+.idea/
+.vscode/
+
 # ---- Misc generated files ----
 *.swp
-*.lock
 *.sqlite*
