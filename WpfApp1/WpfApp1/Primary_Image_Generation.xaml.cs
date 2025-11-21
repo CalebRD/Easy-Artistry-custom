@@ -97,12 +97,12 @@ namespace YourApp
             {
                 var images = await _client.GenerateAsync(
                     prompt: prompt,
-                        size: "1024x1024",
+                    size: "768x768",
                     n: 1,
-                    model: "dalle",
+                    model: "local",
                     preset: "balanced",
-                    negativePrompt: "",
-                    sdOverrides: null
+                    negativePrompt: "bad quality",
+                    sdOverrides: new { }
                 );
                 if (images.Count > 0)
                 {
@@ -621,6 +621,26 @@ namespace YourApp
             }
 
             throw new InvalidOperationException("Unable to determine how to save payload.");
+        }
+
+        protected override async void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            if (_client is not null)
+            {
+                try
+                {
+                    await _client.ShutdownLocalServerAsync();
+                }
+                catch
+                {
+                    // swallow shutdown errors so closing window never throws
+                }
+
+                _client.Dispose();
+                _client = null;
+            }
         }
     }
 }

@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\D\\programming\\RPI_CSCI\\EasyArtistry\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj": {}
+    "C:\\workspace\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj": {}
   },
   "projects": {
-    "C:\\D\\programming\\RPI_CSCI\\EasyArtistry\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj": {
+    "C:\\workspace\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\D\\programming\\RPI_CSCI\\EasyArtistry\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj",
+        "projectUniqueName": "C:\\workspace\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj",
         "projectName": "EasyArtistry.MiddleLayer",
-        "projectPath": "C:\\D\\programming\\RPI_CSCI\\EasyArtistry\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj",
-        "packagesPath": "C:\\Users\\Zheng Zhu\\.nuget\\packages\\",
-        "outputPath": "C:\\D\\programming\\RPI_CSCI\\EasyArtistry\\Easy-Artistry-custom\\middle_layer\\obj\\",
+        "projectPath": "C:\\workspace\\Easy-Artistry-custom\\middle_layer\\EasyArtistry.MiddleLayer.csproj",
+        "packagesPath": "C:\\Users\\lin\\.nuget\\packages\\",
+        "outputPath": "C:\\workspace\\Easy-Artistry-custom\\middle_layer\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Zheng Zhu\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\lin\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -60,12 +54,26 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
