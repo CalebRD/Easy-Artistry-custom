@@ -128,6 +128,7 @@ def generate_image_from_prompt(
         • For **cloud SD / DALL·E**  direct HTTPS image URLs.
     """
     print("Entered GIFP",file=sys.stderr)
+    print(f"[gifp] prompt={prompt}", file=sys.stderr)
     if not re.match(r"^\d+x\d+$", size):
         raise ValueError('size must be like "1024x1024"')
     if sd_params and not isinstance(sd_params, dict):
@@ -166,7 +167,7 @@ if __name__ == "__main__":
         print("description:")
         
         user_text = input("> ").strip()
-        data = chat_generate_prompt(user_text, provider="cloudflare")
+        data = chat_generate_prompt(user_text, provider="openai")
         print("\nPrompt:", data["prompt"])
         
         # Launch local WebUI with a given checkpoint (example: anime XL)

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
@@ -25,7 +26,7 @@ namespace EA_Utils
         {
             // format the arguments
             string tempArgs = $"\"main.py\"";
-            for (int i = 0; i < args.Count(); i++)
+            for (int i = 0; i < args.Count; i++)
             {
                 tempArgs += $" \"{args[i]}\"";
             }

@@ -9,11 +9,13 @@ using System.Windows.Media.Imaging;
 using System.Windows;
 using System.Windows.Media;
 
-namespace YourApp
+namespace WpfApp1
 {
     public partial class Primary_Image_Generation : Window
     {
         private static readonly HttpClient HttpClient = new();
+        private readonly string _stderrLogPath;
+        private readonly object _stderrLock = new();
         private EaClient? _client;
         private string? _lastImagePayload;
         public Primary_Image_Generation()
@@ -31,20 +33,14 @@ namespace YourApp
             {
                 // ignore if file locked
             }
+            _stderrLogPath = stderrLog;
 
             try
             {
                 _client = new EaClient(python.Executable, workerPy, projectRoot, python.ExtraArgs);
                 _client.OnError += (msg) =>
                 {
-                    try
-                    {
-                        File.AppendAllText(stderrLog, msg + Environment.NewLine);
-                    }
-                    catch
-                    {
-                        // ignore logging failures
-                    }
+                    AppendBackendLog(msg);
                     Debug.WriteLine($"[Python STDERR] {msg}");
                 };
             }
@@ -92,6 +88,7 @@ namespace YourApp
             string prompt = ChatInput.Text;
             GenerateButton.IsEnabled = false;
             GenerateButton.Content = "Generating...";
+            AppendBackendLog($"[UI] prompt={prompt}");
 
             try
             {
@@ -118,6 +115,7 @@ namespace YourApp
             }
             finally
             {
+                AppendBackendLog("[UI] generation complete");
                 GenerateButton.IsEnabled = true;
                 GenerateButton.Content = "Generate";
             }
@@ -514,18 +512,31 @@ namespace YourApp
                 if (uri.Scheme == Uri.UriSchemeFile)
                 {
                     var localPath = uri.LocalPath;
-                    var bytes = await File.ReadAllBytesAsync(localPath).ConfigureAwait(false);
-                    return LoadBitmapFromBytes(bytes);
+                    if (File.Exists(localPath))
+                    {
+                        return await LoadBitmapFromFileAsync(localPath).ConfigureAwait(false);
+                    }
                 }
             }
 
             if (File.Exists(payload))
             {
-                var bytes = await File.ReadAllBytesAsync(payload).ConfigureAwait(false);
-                return LoadBitmapFromBytes(bytes);
+                return await LoadBitmapFromFileAsync(payload).ConfigureAwait(false);
             }
 
-            throw new InvalidOperationException("Unrecognized image payload: " + payload);            
+            throw new InvalidOperationException("Unrecognized image payload: " + payload);
+        }
+
+        private static async Task<BitmapImage> LoadBitmapFromFileAsync(string path)
+        {
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.StreamSource = stream;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
         }
 
         private static bool TryLoadBase64(string payload, out BitmapImage bitmap)
@@ -555,6 +566,26 @@ namespace YourApp
             bitmap.EndInit();
             bitmap.Freeze();
             return bitmap;
+        }
+        
+        private void AppendBackendLog(string message)
+        {
+            if (string.IsNullOrWhiteSpace(_stderrLogPath))
+            {
+                return;
+            }
+
+            try
+            {
+                lock (_stderrLock)
+                {
+                    File.AppendAllText(_stderrLogPath, message + Environment.NewLine);
+                }
+            }
+            catch
+            {
+                // ignore logging failures
+            }
         }
 
         private static void SaveImagePayload(string payload)

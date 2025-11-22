@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
@@ -9,7 +10,7 @@ using EA_Utils;
 
 
 
-namespace YourApp 
+namespace WpfApp1
 {
 
     public partial class MainWindow : Window
@@ -90,7 +91,7 @@ namespace YourApp
 
 
             // Run the script
-            List<string> args = [userInput];
+            var args = new List<string> { userInput };
             return EA_utils.RunPythonScript(scriptPath, args);
             
         }
