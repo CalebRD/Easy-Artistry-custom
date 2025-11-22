@@ -31,6 +31,7 @@ obj/
 **/bin/
 **/obj/
 .vs/
+**/.vs/
 *.user
 *.suo
 *.cache
