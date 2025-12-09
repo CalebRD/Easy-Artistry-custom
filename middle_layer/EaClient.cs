@@ -77,6 +77,8 @@ public sealed class EaClient : IDisposable
         //         OnError?.Invoke(line);
         //     }
         // });
+
+        // Read output from backend stderr and send to frontend terminal
         _stderrReader = Task.Run(async () =>
         {
             using var sr = _proc.StandardError;

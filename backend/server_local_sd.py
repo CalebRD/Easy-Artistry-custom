@@ -30,10 +30,10 @@ def main():
     cmd = [sys.executable, "launch.py", "--api", "--listen", "--port", args.port]
 
     if detect_cuda():
-        print("✅ GPU detected (CUDA available). Launching with xformers + half precision …")
+        print("GPU detected (CUDA available). Launching with xformers + half precision …")
         cmd += ["--xformers", "--medvram"]
     else:
-        print("⚠️ No GPU detected, running in CPU‑only mode (this will be slower) …")
+        print("No GPU detected, running in CPU‑only mode (this will be slower) …")
         cmd += ["--precision", "full", "--no-half", "--skip-torch-cuda-test"]
 
     # add checkpoint path if provided
@@ -41,7 +41,7 @@ def main():
         cmd += ["--ckpt", args.model_path]
 
     # start WebUI
-    print("▶ Launch command:", " ".join(cmd))
+    print("Launch command:", " ".join(cmd))
     subprocess.Popen(cmd, cwd=ROOT)
 
     # simple heartbeat check
@@ -49,12 +49,12 @@ def main():
     for _ in range(30):
         try:
             requests.get(f"{host}/sdapi/v1/sd-models", timeout=3)
-            print(f"🚀 WebUI is ready at {host}")
+            print(f"WebUI is ready at {host}")
             break
         except requests.exceptions.RequestException:
             time.sleep(2)
     else:
-        print("⏰ WebUI startup timed out; please check the log window.")
+        print("WebUI startup timed out; please check the log window.")
 
 if __name__ == "__main__":
     main()
