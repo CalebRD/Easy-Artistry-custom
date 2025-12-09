@@ -10,8 +10,18 @@ namespace YourApp
 {
     public static class ImagePayloadService
     {
+        // Shared HttpClient for downloading images over HTTP(S).
         private static readonly HttpClient HttpClient = new();
 
+        /// <summary>
+        /// Converts a generic image payload into a BitmapImage.
+        /// Supports:
+        /// 1) base64 (optionally "data:*;base64,..."),
+        /// 2) HTTP/HTTPS URLs,
+        /// 3) file:// URIs,
+        /// 4) direct file paths.
+        /// Throws if the payload type is not recognized.
+        /// </summary>
         public static async Task<BitmapImage> LoadBitmapFromPayloadAsync(string payload)
         {
             if (string.IsNullOrWhiteSpace(payload))
@@ -60,6 +70,13 @@ namespace YourApp
             throw new InvalidOperationException("Unrecognized image payload: " + payload);
         }
 
+        /// <summary>
+        /// Saves an image payload to disk by:
+        /// 1) If base64: pops up SaveFileDialog and encodes as PNG/JPEG.
+        /// 2) If HTTP(S) URL: opens it in the default browser.
+        /// 3) If file/URI path: lets user choose a target path and copies the file.
+        /// Throws if it cannot determine a way to save the payload.
+        /// </summary>
         public static void SaveImagePayload(string payload)
         {
             payload = payload.Trim();
@@ -126,6 +143,10 @@ namespace YourApp
             throw new InvalidOperationException("Unable to determine how to save payload.");
         }
 
+        /// <summary>
+        /// Tries to interpret the payload as a base64-encoded image.
+        /// Returns true on success and outputs a BitmapImage.
+        /// </summary>
         private static bool TryLoadBase64(string payload, out BitmapImage bitmap)
         {
             bitmap = null!;
@@ -142,6 +163,9 @@ namespace YourApp
             }
         }
 
+        /// <summary>
+        /// Builds a BitmapImage from a raw byte[] and freezes it for WPF usage.
+        /// </summary>
         private static BitmapImage LoadBitmapFromBytes(byte[] bytes)
         {
             using var ms = new MemoryStream(bytes);

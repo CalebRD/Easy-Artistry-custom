@@ -5,11 +5,20 @@ using System.Windows.Media;
 
 namespace YourApp
 {
+    /// <summary>
+    /// Main window for primary image generation: handles UI events and talks to the backend client.
+    /// </summary>
     public partial class Primary_Image_Generation : Window
     {
+        // Client used to communicate with the Python backend.
         private EaClient? _client;
+
+        // Stores the most recent image payload returned from the backend.
         private string? _lastImagePayload;
 
+        /// <summary>
+        /// Initializes the window and tries to create the backend client.
+        /// </summary>
         public Primary_Image_Generation()
         {
             InitializeComponent();
@@ -24,7 +33,9 @@ namespace YourApp
             }
         }
 
-        // Input box got focus
+        /// <summary>
+        /// Clears the placeholder text when the prompt textbox gains focus.
+        /// </summary>
         private void ChatInput_GotFocus(object sender, RoutedEventArgs e)
         {
             if (ChatInput.Text == "Type Prompt Here...")
@@ -34,7 +45,9 @@ namespace YourApp
             }
         }
 
-        // Input box lost focus
+        /// <summary>
+        /// Restores the placeholder text if the prompt textbox loses focus and is empty.
+        /// </summary>
         private void ChatInput_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ChatInput.Text))
@@ -44,7 +57,10 @@ namespace YourApp
             }
         }
 
-        // Generate Button
+        /// <summary>
+        /// Handles the Generate button click:
+        /// validates prompt, sends request to backend, and displays the resulting image.
+        /// </summary>
         private async void GenerateButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ChatInput.Text) || ChatInput.Text == "Type Prompt Here...")
@@ -93,7 +109,10 @@ namespace YourApp
             }
         }
 
-        // Save Button
+        /// <summary>
+        /// Handles the Save button click:
+        /// saves the last generated image payload using ImagePayloadService.
+        /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_lastImagePayload))
@@ -112,6 +131,9 @@ namespace YourApp
             }
         }
 
+        /// <summary>
+        /// Ensures the backend client is shut down and disposed when the window is closed.
+        /// </summary>
         protected override async void OnClosed(EventArgs e)
         {
             base.OnClosed(e);

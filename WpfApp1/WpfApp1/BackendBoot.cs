@@ -10,8 +10,13 @@ namespace YourApp
     {
         private const string StderrFileName = "backend-stderr.log";
 
+        // Holds the final Python command + optional extra arguments (e.g., "conda run ...")
         private readonly record struct PythonLaunchInfo(string Executable, string? ExtraArgs);
 
+        /// <summary>
+        /// Creates and configures an EaClient, resolving project root, Python executable,
+        /// worker.py path, and wiring stderr logging.
+        /// </summary>
         public static EaClient CreateClient()
         {
             var projectRoot = ResolveProjectRoot();
@@ -46,6 +51,12 @@ namespace YourApp
             return client;
         }
 
+        /// <summary>
+        /// Tries to locate the project root folder:
+        /// 1) EASY_ARTISTRY_ROOT env var, or
+        /// 2) walking up from BaseDirectory until it finds middle_layer + backend, or
+        /// 3) falls back to BaseDirectory.
+        /// </summary>
         private static string ResolveProjectRoot()
         {
             var env = Environment.GetEnvironmentVariable("EASY_ARTISTRY_ROOT");
@@ -69,6 +80,12 @@ namespace YourApp
             return AppDomain.CurrentDomain.BaseDirectory;
         }
 
+        /// <summary>
+        /// Locates worker.py:
+        /// 1) EASY_ARTISTRY_WORKER env var, or
+        /// 2) middle_layer/worker.py inside project root.
+        /// Throws if not found.
+        /// </summary>
         private static string ResolveWorkerScript(string projectRoot)
         {
             var env = Environment.GetEnvironmentVariable("EASY_ARTISTRY_WORKER");
@@ -86,6 +103,11 @@ namespace YourApp
             throw new FileNotFoundException("Could not locate worker.py", candidate);
         }
 
+        /// <summary>
+        /// Resolves which Python to use in the following priority:
+        /// config file, EASY_ARTISTRY_PYTHON, conda env/prefix, embedded python/,
+        /// python on PATH, Windows py launcher, then generic "python"/"python3".
+        /// </summary>
         private static PythonLaunchInfo ResolvePythonExecutable(string projectRoot)
         {
             var cfg = LoadPythonConfig(projectRoot);
@@ -127,6 +149,9 @@ namespace YourApp
                 : new PythonLaunchInfo("python3", null);
         }
 
+        /// <summary>
+        /// Uses "where python" (Windows) or "which python3" (Unix) to locate Python on PATH.
+        /// </summary>
         private static bool TryFindPythonOnPath(out string pythonPath)
         {
             pythonPath = string.Empty;
@@ -167,6 +192,10 @@ namespace YourApp
             return false;
         }
 
+        /// <summary>
+        /// Loads simple key=value config from .pythonPath in project root into a dictionary.
+        /// Lines starting with # or // are ignored.
+        /// </summary>
         private static IReadOnlyDictionary<string, string> LoadPythonConfig(string projectRoot)
         {
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -201,6 +230,11 @@ namespace YourApp
             return map;
         }
 
+        /// <summary>
+        /// Tries to build a PythonLaunchInfo from conda settings:
+        /// priority: config conda_prefix, config conda_env, env EASY_ARTISTRY_CONDA_PREFIX/CONDA_PREFIX,
+        /// then EASY_ARTISTRY_CONDA_ENV/CONDA_DEFAULT_ENV with "conda run".
+        /// </summary>
         private static bool TryCondaEnvironment(IReadOnlyDictionary<string, string> cfg, out PythonLaunchInfo info)
         {
             info = default;
@@ -242,6 +276,9 @@ namespace YourApp
             return true;
         }
 
+        /// <summary>
+        /// Given a conda prefix folder, tries to resolve the python executable inside it.
+        /// </summary>
         private static bool TryResolveCondaPrefix(string prefix, out PythonLaunchInfo info)
         {
             info = default;
@@ -271,6 +308,10 @@ namespace YourApp
             return false;
         }
 
+        /// <summary>
+        /// Builds a PythonLaunchInfo that uses "conda run -n envName python"
+        /// by locating the conda executable and composing the arguments.
+        /// </summary>
         private static bool TryLaunchCondaEnv(string envName, string? configuredCondaPath, out PythonLaunchInfo info)
         {
             info = default;
@@ -284,6 +325,9 @@ namespace YourApp
             return true;
         }
 
+        /// <summary>
+        /// On Windows, tries to use the "py.exe" launcher with "-3" (latest Python 3).
+        /// </summary>
         private static bool TryPythonLauncher(out PythonLaunchInfo info)
         {
             info = default;
@@ -326,6 +370,11 @@ namespace YourApp
             return false;
         }
 
+        /// <summary>
+        /// Locates the "conda" executable:
+        /// 1) optional configured path, or
+        /// 2) "where conda" / "which conda" on PATH.
+        /// </summary>
         private static bool TryFindCondaExecutable(string? configuredPath, out string condaPath)
         {
             condaPath = string.Empty;
